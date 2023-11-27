@@ -10,7 +10,11 @@ UNDER SUBMISSION (arXiv soon)
 
 ## Running
 
-Detailed instructions will be available soon. Outputs will include a general report in the form of a .csv sheet and the masks for all targets in .nii.gz format. Below is a rendering for PARSE scan 013 and CoronaCases scan 003.
+Detailed instructions will be available soon. MEDPSeg will be available for installation through pip. Following is how the graphical user interface will look like: 
+
+![Graphical User Interface](medpseg/gui.png "Graphical User Interface")
+
+Outputs will include a general report in the form of a .csv sheet and the masks for all targets in .nii.gz format. Below is a rendering for PARSE scan 013 and CoronaCases scan 003.
 
 |![Outputs for PARSE013](medpseg/respiratory.gif "Outputs for PARSE013")|
 |:--:| 

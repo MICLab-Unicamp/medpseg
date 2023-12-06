@@ -1,5 +1,5 @@
 # Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg): End-to-end segmentation of pulmonary structures and lesions in computed tomography
-Welcome to MEDPSeg. This is a new version of our old [MEDSeg](https://github.com/MICLab-Unicamp/medseg) methodology. In our work, we take advantage of the hierarchical nature of lesion annotation inside the lung to optimize over heterogeneous data and labels! Multitasking of pulmonary artery and airways is also involved. In this repository you can reproduce MEDPSeg's automated segmentation capabilities using a graphical tool or command line interface, installed through pip. 
+Welcome to MEDPSeg. This is a new version of our old [MEDSeg](https://github.com/MICLab-Unicamp/medseg) methodology. In our work, we take advantage of the hierarchical nature of lesion annotation inside the lung to optimize over heterogeneous data and labels! Multitasking of pulmonary artery and airways is also involved. In this repository you can reproduce trained MEDPSeg's automated segmentation capabilities using a graphical tool or command line interface, installed through pip. 
 
 ![Polymorphic and Multitask Learning](medpseg/graphic_summary.png "Polymorphic and Multitask Learning")
 
@@ -92,7 +92,7 @@ Following are results of running in on slice 100 of coronacases ID: 003. Note th
 
 ## How to train?
 
-This code is only intended to allow reproduction of the segmentation capabilities of our work. 
+This code is only intended to allow reproduction of the segmentation capabilities of our work, for now. 
 However, we provide the complete Lightning Module code (in poly_seg_2d_module.py) which can be used under your workflow and data for training if you use PyTorch Lightning. We do have future plans to provide training code that is able to organize polymorphic data automatically.
 
 ### ITKSnap (optional)
@@ -125,3 +125,7 @@ Lobe segmentation in its current form might take a while to finish and be affect
 ### Future Goals
 
 Improve lobe segmentation
+
+Provide reproducibility of custom polymorphic data loading
+
+Provide training reproducibility

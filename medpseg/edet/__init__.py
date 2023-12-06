@@ -1,0 +1,1 @@
+from medpseg.edet.modeling_efficientdet import EfficientDetForSemanticSegmentation

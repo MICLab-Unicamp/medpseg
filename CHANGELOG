@@ -1,0 +1,36 @@
+v4.0.0
+* Public release! 
+
+v4.0.0rc
+* Runs in streamlit server ok
+* Cleanup
+* Report per lobe
+* Support slice wise predictions
+* 4.0.0 will accompany paper and runs in streamlit
+
+v3.1.1
+* Adding lobe segmentation
+
+v3.1.0
+* Many improvements to post processing and GUI.
+* Saving activations deprecated uncertainty
+
+v3.0.0
+* Introducing Polymorphic MEDSeg
+
+v2.5.1
+* Fix monitoring bug when not having GPUs accessible
+
+v2.5
+* Added Parse vessel segmentation output
+* Deprecated some old code
+* Move large files to separate release
+
+v2.4
+
+* Better input/output flow, option to use less memory by not showing activations
+* Option to give a file with input paths separated by newlines for bulk runs.
+
+v2.3
+
+* Run without GUI using CLI arguments (check --help), including an atm_mode which only computes the airway.

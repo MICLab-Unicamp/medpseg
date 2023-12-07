@@ -54,9 +54,6 @@ setuptools.setup(
                       'monai',
                       'imageio',
                       'nibabel'],
-    dependency_links=[
-        'https://download.pytorch.org/whl/cu113'
-    ],
     entry_points={
         'console_scripts': ["medpseg = medpseg.run:main", "medpseg_cpu = medpseg.run:main_cpu"]
     },

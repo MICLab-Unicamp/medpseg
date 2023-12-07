@@ -578,7 +578,7 @@ def pipeline(runlist: List[str],
                 # Filter lobe by saved lung. Hopefully reading will be aligned.
                 lung_image = sitk.ReadImage(output_lung_path)
                 lung = sitk.GetArrayFromImage(lung_image)
-                output_lobes_path = output_lung_path.replace("lung", "lobes")
+                output_lobes_path = output_lung_path.replace("_lung.nii.gz", "_lobes.nii.gz")
                 lobes_image = sitk.ReadImage(output_lobes_path)
                 lobes = sitk.GetArrayFromImage(lobes_image)
                 lobes = lobes*lung

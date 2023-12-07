@@ -1,13 +1,12 @@
--i https://download.pytorch.org/whl/cu113
 numpy
 rich
 pillow
 scipy
 tqdm
-torch==1.12.1
+torch
 pandas
-torchvision==0.13.1
-pytorch-lightning==2.0.5
+torchvision
+pytorch-lightning
 efficientnet_pytorch
 connected-components-3d
 psutil

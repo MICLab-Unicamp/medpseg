@@ -18,33 +18,45 @@ The manuscript for this method is under submission, but you can check our arXiv 
 
 ## Requirements
 
-This tool was tested on Ubuntu 20.04, 22.04 and Windows 10. The following instructions refer to quickly running the tool installing it with Miniconda and pip. Minimum RAM requirement in high resolution CT is 16 GB, with 32 GB recommended. Minimum GPU memory requirements for running on the GPU is 6 GB, with at least 8 GB recommended.
+This tool was tested on Ubuntu 20.04, 22.04 and Windows 10. The following instructions refer to quickly running the tool installing it with Miniconda and pip. Minimum RAM requirement in high resolution CT is 16 GB, with 32 GB recommended. Minimum GPU memory requirements for running on the GPU is 6 GB, with at least 8 GB recommended. Dependencies installed during setup are on the requirements.txt file. 
 
 ### Miniconda
 
-We recommend using a Miniconda/Anaconda environment for installation. To install Miniconda for Windows or Linux follow the instructions in: https://docs.conda.io/en/latest/miniconda.html. If you are on windows. All following commands should be executed in Anaconda Prompt (bundled with miniconda).
+We recommend using a Miniconda/Anaconda environment for installation. To install Miniconda for Windows or Linux follow the instructions in: https://docs.conda.io/en/latest/miniconda.html. If you are on windows. All following commands should be executed in Anaconda Prompt (bundled with miniconda). We recommend you create an environment specific to running MEDPSeg to avoid messing your existing environment. This can be done with, for example:
 
-We provide a Dockerfile for an example usage with a Docker environment but it has not been tested for the current version yet. 
+    conda create -n medpseg python=3.8
 
-### GPU Usage: PyTorch
+MEDPSeg has been tested with Python > 3.8, up to 3.11. We provide a Dockerfile for an example usage with a Docker environment but it has not been tested for the current version yet. 
 
-Now, install torch with CUDA GPU support. It can be easily installed with a single command depending on your environment. 
-Follow the instructions for your OS on http://www.pytorch.org/. Either PyTorch 1.12.1 or 2.0.x should work.
+### GPU Usage: PyTorch setup
+
+Now, install torch with CUDA GPU support. It can be easily installed with a single command depending on your environment. This depends on what GPU you are using and its driver version and support for newer or older CUDA versions. Follow the instructions for your OS and CUDA support of your GPU driver on http://www.pytorch.org/. Either PyTorch 1.12.1 or 2.x should work.
 
 If you don't want to use a GPU, you can skip this part and trust the automatic installation of dependencies.
 
 ## Installation
 
-The following command lines should do all installation steps:
+The following command lines should do all remaining installation steps. Do these steps AFTER you have an environment with PyTorch working with GPU support.
+
+First, clone the repository:
 
     git clone https://github.com/MICLab-Unicamp/medpseg
+
+ Then, due to the large size of network weights, you need to go into the Releases in this repository, download the [data_poly.zip](https://github.com/MICLab-Unicamp/medpseg/releases/download/v4.0.0/data_poly.zip) file, and put it inside the medpseg folder. This can be done through the command line with: 
+    
     cd medpseg/medpseg
     wget https://github.com/MICLab-Unicamp/medpseg/releases/download/v4.0.0/data_poly.zip
+
+Extract the .ckpt files inside the medpseg/medpseg folder. The .ckpt files should be in the same directory level as the run.py file.
+
     unzip data_poly.zip
+
+Finally, go into the top level folder (with the setup.py file) and install the tool with "pip install . ". 
+
     cd ..
     pip install .
 
-Explanation: First, clone the repository. Then, due to the large size of network weights, you need to go into the Releases in this repository, download the [data_poly.zip](https://github.com/MICLab-Unicamp/medpseg/releases/download/v4.0.0/data_poly.zip) file and extract the .ckpt files inside the medpseg/medpseg folder. The .ckpt files should be in the same directory level as the run.py file. Finally, go into the top level folder (with the setup.py file) and install the tool with "pip install . ". 
+pip install . will fail if the .ckpt files are not in the correct directory. 
 
 The above commands require git, unzip and wget which can be installed in Ubuntu with 
 
@@ -108,9 +120,9 @@ For windows, install using the self-install package in: http://www.itksnap.org/p
 ## Issues?
 
 If you have any problems, make sure your pip is the same from your miniconda installation,
-by checking if pip --version points to the miniconda directory.
+by checking if pip --version points to the miniconda directory, in the correct environment.
 
-Also make sure you have downloaded the data_poly.zip weights in the release section and unpacked it alongside the run.py file before doing pip install, as mentioned in the installation section. 
+Also make sure you have downloaded the data_poly.zip weights in the release section and unpacked it alongside the run.py file before doing pip install, as mentioned in the installation section. The tool will not work correctly otherwise.
 
 If you have any issues, feel free to create an issue on this repository.
 
@@ -120,7 +132,7 @@ Pulmonary artery segmentation can be affected if the input CT is not contrast en
 
 The segmentation of tubular structures (airway, pulmonary artery) might have multiple connected components. It will only have a single connected component if the "Post" option is selected or given through CLI.
 
-Lobe segmentation in its current form might take a while to finish and be affected by consolidations. We will provide an option to not do and it improve it soon.
+Lobe segmentation in its current form might take a while to finish and be affected by consolidations. You can disable it by unchecking the --lobe_seg checkbox in the GUI or using the --disable_lobe CLI argument.
 
 ### Future Goals
 

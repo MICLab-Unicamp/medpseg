@@ -37,6 +37,7 @@ from monai.transforms import SaveImaged
 
 # V4: Reorganization, documentation, removal of unused code
 import traceback
+from medpseg import check_weight
 
 
 def int_to_8bit_rgb(arrays: np.ndarray, backgrounds: np.ndarray, save_path: str, slicify: bool):
@@ -99,7 +100,7 @@ def pipeline(runlist: List[str],
              min_hu: int = -1024,
              max_hu: int = 600,
              slicify: bool = False,
-             disable_lobe: bool = False):  
+             lobe_seg: bool = True):  
     
     try:
         # General exception wrapper, sends it through info_q and quits if anything goes wrong
@@ -111,11 +112,15 @@ def pipeline(runlist: List[str],
         assert len(runlist) > 0, "No file found on given input path."
 
         # MEDPSeg initialization
-        poly_model = PolySegmentationPipeline(weight=os.path.join(pkg_path, "poly_medseg_25d_fix.ckpt"),
+        poly_weight = os.path.join(pkg_path, "poly_medseg_25d_fix.ckpt")
+        check_weight(poly_weight)
+        poly_model = PolySegmentationPipeline(weight=poly_weight,
                                               batch_size=batch_size, cpu=cpu, output_dir=output_path, post=post)
 
         # We still use the poly_lung part of the old pipeline
-        model = SegmentationPipeline(best_3d=os.path.join(pkg_path, "poly_lung.ckpt"),  # Only this weight is still being used, rest is None
+        poly_lung_weight = os.path.join(pkg_path, "poly_lung.ckpt")
+        check_weight(poly_lung_weight)
+        model = SegmentationPipeline(best_3d=poly_lung_weight,  # Only this weight is still being used, rest is None
                                      best_25d=None,
                                      best_25d_raw=None,
                                      airway=None,
@@ -125,8 +130,10 @@ def pipeline(runlist: List[str],
                                      n=None)
         
         # Load Jean's lobe segmentor, and its needed monai_saver
-        if not disable_lobe:
-            lober = LoberModule.load_from_checkpoint(os.path.join(pkg_path, "lober.ckpt"), map_location="cpu")
+        if lobe_seg:
+            lober_weight = os.path.join(pkg_path, "lober.ckpt")
+            check_weight(lober_weight)
+            lober = LoberModule.load_from_checkpoint(lober_weight, map_location="cpu")
             monai_saver = SaveImaged(keys=["image"],
                                      meta_keys=["image_meta_dict"],
                                      output_ext=".nii.gz",
@@ -204,7 +211,7 @@ def pipeline(runlist: List[str],
 
                 info_q.put(("write", f"WARNING: Adjusted 2D input to pseudo-3D image shape: {data.shape}. Intensities were reversed engineered, check correctnes in {run}."))
 
-            if not non_medical_format and not disable_lobe:
+            if not non_medical_format and lobe_seg:
                 # Perform lobe segmentation
                 info_q.put(("write", "Performing lobe segmentation pipeline..."))
                 lobe_dict = lober.predict(run, cpu=cpu)

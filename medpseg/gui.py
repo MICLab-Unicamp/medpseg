@@ -34,10 +34,12 @@ from medpseg.utils import DummyTkIntVar
 
 # Set global variable for icon.png location
 if os.name == "nt":
+    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "icon_original.png")
     ICON_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "icon.png")
 else:
+    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "icon_original.png")
     ICON_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "icon.png")
-
+    
 # Default title global variable
 DEFAULT_TITLE = "Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg)"
 
@@ -115,8 +117,9 @@ class MainWindow(threading.Thread):
             print("Input and output given through CLI, not invoking GUI.")
             assert os.path.exists(self.args.input_folder), f"Input folder {self.args.input_folder} doesn't exist."
             self.input_path = self.args.input_folder
-
+            
             # Standins for variables that usually come from the GUI
+            self.lobe_seg = DummyTkIntVar(value=int(not self.args.disable_lobe))
             self.display = DummyTkIntVar(value=0)
             self.act = DummyTkIntVar(value=0)
             self.post = DummyTkIntVar(value=int(self.args.post))
@@ -176,7 +179,7 @@ class MainWindow(threading.Thread):
                                                                 self.args.min_hu,
                                                                 self.args.max_hu,
                                                                 self.args.slicify,
-                                                                self.args.disable_lobe))
+                                                                bool(self.lobe_seg.get())))
         
         # Start thread for communication between pipeline and GUI
         self.pipeline_comms_thread = threading.Thread(target=self.pipeline_comms)                                                                
@@ -206,7 +209,7 @@ class MainWindow(threading.Thread):
                     if msg_is_exception:
                         error_msg = f"ERROR: {str(info.__class__.__name__)}: {info}"
                         self.write_to_textbox(f"ERROR: {str(info.__class__.__name__)}: {info}")
-                        self.write_to_textbox(f"Aborting processing! This was most likely an error regarding the data input.")
+                        self.write_to_textbox(f"Aborting processing! This was most likely an error regarding the data input or missing weights before doing pip install.")
                         self.write_to_textbox(f"Feel free to create an issue in our GitHub.")
                         if not self.cli:
                             alert_dialog(error_msg)
@@ -404,7 +407,7 @@ class MainWindow(threading.Thread):
         else:
             # Here all GUI elements are initialized. WS is the "top-level window"
             self.ws = Tk()
-            icon = PhotoImage(file=ICON_PNG)
+            icon = PhotoImage(file=ICON_ORIGINAL_PNG)
             self.ws.iconphoto(False, icon)
             self.ws.title(DEFAULT_TITLE)
             self.ws.geometry('1800x600')  # default for 1080p, could be adjustable in the future
@@ -426,6 +429,7 @@ class MainWindow(threading.Thread):
             self.write_to_textbox('Check "Display" to attempt to display results using ITKSnap (default on).')
             self.write_to_textbox('The "Post" option selects the largets connected component of airway and vessel segmentation. This can cause problems in low-resolution scans (default off).')
             self.write_to_textbox('The "Save act." option saves activations and attention maps on the output folder, uses more RAM (default off).')
+            self.write_to_textbox('The "Lobe seg." option performs 3D lobe segmentation with a trained VNet. Includes per lobe reports in the output .csv sheet. Adds around 1 minute more processing time per scan, using a GPU (default on).')
             if self.args.output_folder is not None:
                 os.makedirs(self.args.output_folder, exist_ok=True)
                 self.write_to_textbox(f"Results will be in the '{self.args.output_folder}' folder")
@@ -478,6 +482,11 @@ class MainWindow(threading.Thread):
             c4 = tk.Checkbutton(self.ws, text='Post', variable=self.post, onvalue=1, offvalue=0, state='active')
             c4.config(font=("Sans", "14"))
             c4.pack(side='left')
+
+            self.lobe_seg = tk.IntVar(value=1)
+            c5 = tk.Checkbutton(self.ws, text='Lobe seg.', variable=self.lobe_seg, onvalue=1, offvalue=0, state='active')
+            c5.config(font=("Sans", "14"))
+            c5.pack(side='left')
 
             # Initializing buttons for actions (load and start processing)
             boldStyle = Style ()

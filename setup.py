@@ -1,5 +1,13 @@
+import os
 import setuptools
-from medpseg import __version__
+from medpseg import __version__, check_weight
+
+
+# Before anything, check presence of weights
+check_weight(os.path.join("medpseg", "poly_medseg_25d_fix.ckpt"))
+check_weight(os.path.join("medpseg", "poly_lung.ckpt"))
+check_weight(os.path.join("medpseg", "lober.ckpt"))
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -22,8 +30,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
-    # TODO lighten up requirements for final publication release
+    python_requires='>=3.8',
     install_requires=['setuptools', 
                       'numpy', 
                       'rich', 
@@ -44,7 +51,12 @@ setuptools.setup(
                       'matplotlib',
                       'timm',
                       'torchinfo',
-                      'monai'],
+                      'monai',
+                      'imageio',
+                      'nibabel'],
+    dependency_links=[
+        'https://download.pytorch.org/whl/cu113'
+    ],
     entry_points={
         'console_scripts': ["medpseg = medpseg.run:main", "medpseg_cpu = medpseg.run:main_cpu"]
     },

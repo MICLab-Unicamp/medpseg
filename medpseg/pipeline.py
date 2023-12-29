@@ -608,11 +608,18 @@ def pipeline(runlist: List[str],
                 output_csv[f"{lobe_str} POI (%)"].append(lobe_poi)
             
             if not non_medical_format:
-                del lobes
-                del covid
+                # If those are still instantiated delete
+                try:
+                    del lobes
+                except Exception:
+                    pass
+
+                try:
+                    del covid
+                except Exception:
+                    pass
             
             # Lobe statistics done, everything saved!
-
             info_q.put(("iterbar", 100))
             info_q.put(("write", f"Processing finished {run}."))
 

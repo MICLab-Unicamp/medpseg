@@ -59,7 +59,7 @@ def run(input_path: str, output_path: str) -> str:
             with subbody.container():
                 st.write(output)
             output_buffer.append(output)
-        print(f"Process running... Poll: {process.poll()}. Writing to browser: {output}")
+        print(f"Process running... Writing to browser: {output}")
         time.sleep(0.1)
     print("Process finished.")
 

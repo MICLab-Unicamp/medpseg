@@ -483,10 +483,11 @@ def pipeline(runlist: List[str],
             spacing = spacing[::-1]
             writer = sitk.ImageFileWriter()
 
-            # If slicify, slice_background is the whole original volume 
+            # If slicify, slice_background is the whole original volume.
+            # This is independent of non_medical_format processing 
             if slicify:
                 slice_background = (data.squeeze().numpy()*255).astype(np.uint8)
-            else:
+            elif not non_medical_format:
                 slice_background = None
 
             # Save airway image

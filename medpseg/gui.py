@@ -410,10 +410,10 @@ class MainWindow(threading.Thread):
             icon = PhotoImage(file=ICON_ORIGINAL_PNG)
             self.ws.iconphoto(False, icon)
             self.ws.title(DEFAULT_TITLE)
-            self.ws.geometry('1800x600')  # default for 1080p, could be adjustable in the future
+            self.ws.geometry('1800x900')  # default for 1080p, could be adjustable in the future
 
             # Canvas for showing Images
-            self.canvas = Canvas(self.ws, width=512, height=512)
+            self.canvas = Canvas(self.ws, width=512, height=1024)
             self.canvas.pack(side='right')
             self.set_icon()
 
@@ -468,7 +468,7 @@ class MainWindow(threading.Thread):
             self.gpu_ram.pack(side='left')
 
             # Initializing checkboxes for GUI arguments
-            self.display = tk.IntVar(value=1)
+            self.display = tk.IntVar(value=0)
             c1 = tk.Checkbutton(self.ws, text='Display', variable=self.display, onvalue=1, offvalue=0, state='active')
             c1.config(font=("Sans", "14"))
             c1.pack(side='left')
@@ -483,7 +483,7 @@ class MainWindow(threading.Thread):
             c4.config(font=("Sans", "14"))
             c4.pack(side='left')
 
-            self.lobe_seg = tk.IntVar(value=1)
+            self.lobe_seg = tk.IntVar(value=0)
             c5 = tk.Checkbutton(self.ws, text='Lobe seg.', variable=self.lobe_seg, onvalue=1, offvalue=0, state='active')
             c5.config(font=("Sans", "14"))
             c5.pack(side='left')

@@ -1,3 +1,7 @@
+v4.1.0
+* Display attention heatmap during prediction
+* Lobe segmentation and display options are not default anymore
+
 v4.0.0
 * Public release! 
 

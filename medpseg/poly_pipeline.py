@@ -22,7 +22,8 @@ from tqdm import tqdm
 from collections import defaultdict
 from operator import itemgetter
 from typing import Dict, Optional
-from multiprocessing import Queue
+from queue import Queue
+from threading import Thread
 
 
 def get_connected_components(volume, return_largest=2, verbose=False):
@@ -85,7 +86,26 @@ class PrintInterface():
         self.tqdm_iter.put(("icon", ''))
 
 
-def poly_stack_predict(model: torch.nn.Module, volume: torch.Tensor, batch_size: int, device=torch.device("cuda:0"), info_q: Optional[Queue] = None, uncertainty: Optional[int] = None):
+def attention_worker(input_q: Queue, model:  PolySeg2DModule, info_q: PrintInterface):
+    '''
+    Computes attention and input image for front end
+    '''
+    print("Attention worker started.")
+    while True:
+        input_slice = input_q.get()
+        
+        if input_slice is None:
+            print("Attention worker done.")
+            return
+
+        atts, circulatory_atts = model.model.return_atts()
+        atts = np.stack(atts).mean(axis=0).squeeze()
+        circulatory_atts = np.stack(circulatory_atts).mean(axis=0).squeeze()
+        package = np.vstack([input_slice[0].numpy().transpose(1, 2, 0).copy(), np.stack([atts, np.zeros_like(atts), circulatory_atts], axis=-1)])
+        info_q.image_to_front_end(package)
+
+
+def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size: int, device=torch.device("cuda:0"), info_q: Optional[Queue] = None, uncertainty: Optional[int] = None):
     '''
     DEVING uncertainty: epistemic uncerainty, predict n times and return the mean and std prediction
     '''
@@ -99,12 +119,11 @@ def poly_stack_predict(model: torch.nn.Module, volume: torch.Tensor, batch_size:
     uncertainty_means = defaultdict(list)
     uncertainty_stds = defaultdict(list)
 
+    input_q = Queue()
+    att_worker = Thread(target=attention_worker, args=(input_q, model, info_q))
+    att_worker.start()
+
     for input_slice in tqdm(e2d_stack_dataloader, desc=f"Slicing with batch size {batch_size}."):
-        if info_q is not None:
-            package = input_slice[0].numpy().transpose(1, 2, 0).copy()
-            # Not necessary anymore with current pre processing: September 2023
-            # package = (package + 1024) / (600 + 1024)
-            info_q.image_to_front_end(package)
         if uncertainty is None:
             out = model(input_slice.to(device), stacking=True)
             for key, y_hat in out.items():
@@ -128,6 +147,15 @@ def poly_stack_predict(model: torch.nn.Module, volume: torch.Tensor, batch_size:
                 uncertainty_means[key].append(buffer.mean(dim=0))
                 uncertainty_stds[key].append(buffer.std(dim=0))
 
+        # Front end update
+        if info_q is not None:
+            input_q.put(input_slice)
+            # atts, circulatory_atts = model.model.return_atts()
+            # atts = np.stack(atts).mean(axis=0).squeeze()
+            # circulatory_atts = np.stack(circulatory_atts).mean(axis=0).squeeze()
+            # package = np.hstack([input_slice[0].numpy().transpose(1, 2, 0).copy(), np.stack([atts, np.zeros_like(atts), circulatory_atts], axis=-1)])
+            # info_q.image_to_front_end(package)
+
     # Certain prediction volumes. Will no run if in uncertain mode.
     for key, y_hat in outs.items():
         np_outs[key] = torch.cat(y_hat).unsqueeze(0).permute(0, 2, 1, 3, 4)
@@ -140,6 +168,11 @@ def poly_stack_predict(model: torch.nn.Module, volume: torch.Tensor, batch_size:
         for key, y_hat in uncertainty_stds.items():
             np_stds[f"{key}_uncertainty"] = torch.cat(y_hat).unsqueeze(0).permute(0, 2, 1, 3, 4)
     
+    # End front end worker
+    input_q.put(None) 
+    print("Waiting for front end worker...")
+    att_worker.join()
+
     if uncertainty is None:
         return np_outs
     else:

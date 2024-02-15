@@ -410,10 +410,10 @@ class MainWindow(threading.Thread):
             icon = PhotoImage(file=ICON_ORIGINAL_PNG)
             self.ws.iconphoto(False, icon)
             self.ws.title(DEFAULT_TITLE)
-            self.ws.geometry('1800x900')  # default for 1080p, could be adjustable in the future
+            self.ws.geometry('1800x600')  # default for 1080p, could be adjustable in the future
 
             # Canvas for showing Images
-            self.canvas = Canvas(self.ws, width=512, height=1024)
+            self.canvas = Canvas(self.ws, width=512, height=512)
             self.canvas.pack(side='right')
             self.set_icon()
 

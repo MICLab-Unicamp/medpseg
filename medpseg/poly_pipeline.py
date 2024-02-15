@@ -88,7 +88,7 @@ class PrintInterface():
 
 def attention_worker(input_q: Queue, model:  PolySeg2DModule, info_q: PrintInterface):
     '''
-    Computes attention and input image for front end
+    Computes attention and input image for front end in a thread
     '''
     print("Attention worker started.")
     while True:
@@ -98,11 +98,19 @@ def attention_worker(input_q: Queue, model:  PolySeg2DModule, info_q: PrintInter
             print("Attention worker done.")
             return
 
-        atts, circulatory_atts = model.model.return_atts()
-        atts = np.stack(atts).mean(axis=0).squeeze()
-        circulatory_atts = np.stack(circulatory_atts).mean(axis=0).squeeze()
-        package = np.vstack([input_slice[0].numpy().transpose(1, 2, 0).copy(), np.stack([atts, np.zeros_like(atts), circulatory_atts], axis=-1)])
+        package = build_front_end_package(input_slice, model)
         info_q.image_to_front_end(package)
+
+def build_front_end_package(input_slice: torch.Tensor, model: PolySeg2DModule):
+    '''
+    Builds data to be sent to front end for display
+    '''
+    atts, circulatory_atts = model.model.return_atts(order=0)
+    atts = np.stack(atts).mean(axis=0).squeeze()
+    circulatory_atts = np.stack(circulatory_atts).mean(axis=0).squeeze()
+    return np.vstack([input_slice[0].numpy().transpose(1, 2, 0).copy(), 
+                      np.stack([np.zeros_like(atts), atts, np.zeros_like(atts)], axis=-1), 
+                      np.stack([circulatory_atts, np.zeros_like(circulatory_atts), np.zeros_like(circulatory_atts)], axis=-1)])
 
 
 def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size: int, device=torch.device("cuda:0"), info_q: Optional[Queue] = None, uncertainty: Optional[int] = None):
@@ -149,7 +157,9 @@ def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size:
 
         # Front end update
         if info_q is not None:
-            input_q.put(input_slice)
+            package = build_front_end_package(input_slice, model)
+            info_q.image_to_front_end(package)
+            # input_q.put(input_slice)  # sync problems
             # atts, circulatory_atts = model.model.return_atts()
             # atts = np.stack(atts).mean(axis=0).squeeze()
             # circulatory_atts = np.stack(circulatory_atts).mean(axis=0).squeeze()

@@ -169,11 +169,13 @@ class MEDSeg(nn.Module):
         
         return x
 
-    def return_atts(self) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+    def return_atts(self, order=3) -> Tuple[List[np.ndarray], List[np.ndarray]]:
         '''
         Returns attentions interpolated to input size (ndarray)
 
         Atts in return list are higher to low resolution
+
+        TODO use pools for this
         '''
         # Squeeze channel
         atts: List[torch.Tensor] = [module.att.squeeze(1) for module in self.model.attention_modules]  # [B, X, Y]
@@ -183,7 +185,7 @@ class MEDSeg(nn.Module):
             ashape = np.array(att.shape)
             assert len(ishape) == len(ashape), f"{ishape} != {ashape}, attention only works in 3D"
             zoom_factors = (ishape/ashape).tolist()
-            zoomed_atts.append(zoom(att.detach().cpu().numpy(), zoom_factors))
+            zoomed_atts.append(zoom(att.detach().cpu().numpy(), zoom_factors, order=order))
 
         zoomed_circulatory_atts = []
         if self.circulatory_branch:
@@ -193,7 +195,7 @@ class MEDSeg(nn.Module):
                 ashape = np.array(att.shape)
                 assert len(ishape) == len(ashape), f"{ishape} != {ashape}, attention only works in 3D"
                 zoom_factors = (ishape/ashape).tolist()
-                zoomed_circulatory_atts.append(zoom(att.detach().cpu().numpy(), zoom_factors))
+                zoomed_circulatory_atts.append(zoom(att.detach().cpu().numpy(), zoom_factors, order=order))
 
         return zoomed_atts, zoomed_circulatory_atts
 

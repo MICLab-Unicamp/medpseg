@@ -24,6 +24,7 @@ from operator import itemgetter
 from typing import Dict, Optional
 from queue import Queue
 from threading import Thread
+from medpseg.turbo_colormap import turbo_colormap_data
 
 
 def get_connected_components(volume, return_largest=2, verbose=False):
@@ -101,16 +102,38 @@ def attention_worker(input_q: Queue, model:  PolySeg2DModule, info_q: PrintInter
         package = build_front_end_package(input_slice, model)
         info_q.image_to_front_end(package)
 
-def build_front_end_package(input_slice: torch.Tensor, model: PolySeg2DModule):
+def build_front_end_package(input_slice: torch.Tensor, model: PolySeg2DModule, outs: Dict[str, torch.Tensor]):
     '''
     Builds data to be sent to front end for display
     '''
-    atts, circulatory_atts = model.model.return_atts(order=0)
-    atts = np.stack(atts).mean(axis=0).squeeze()
-    circulatory_atts = np.stack(circulatory_atts).mean(axis=0).squeeze()
-    return np.vstack([input_slice[0].numpy().transpose(1, 2, 0).copy(), 
-                      np.stack([np.zeros_like(atts), atts, np.zeros_like(atts)], axis=-1), 
-                      np.stack([circulatory_atts, np.zeros_like(circulatory_atts), np.zeros_like(circulatory_atts)], axis=-1)])
+    atts, circulatory_atts = model.model.return_atts(order=1, hr_only=True)
+    # atts = np.stack(atts).mean(axis=0).squeeze()
+    # circulatory_atts = np.stack(circulatory_atts).mean(axis=0).squeeze()
+
+    # Weight the same as loss: 0.75 + exponential decay on weight starting from 1/
+    atts = np.stack([atts[0]*0.75] + [att*(2**(-1*(r+3))) for r, att in enumerate(atts[1:])], axis=0).sum(axis=0).squeeze()
+    circulatory_atts = np.stack([circulatory_atts[0]*0.75] + [catt*(1/(2**(-1*(r+3)))) for r, catt in enumerate(circulatory_atts[1:])], axis=0).sum(axis=0).squeeze()
+    
+
+    # Colormapping
+    rgb_input = input_slice[0].numpy().transpose(1, 2, 0).copy()
+    integer_scalar_array = (np.vstack([atts, circulatory_atts])*255).astype(np.uint8)
+    att_stack = turbo_colormap_data[integer_scalar_array]
+    rgb_out = outs["main"].detach().cpu().squeeze()[1:]
+    atm = outs["atm"].detach().cpu().squeeze()[1]
+    vessel = outs["vessel"].detach().cpu().squeeze()[1]
+    rgb_out[1] = rgb_out[1]/2 + atm/2
+    rgb_out[2] = rgb_out[2]/2 + atm/2
+    rgb_out[0] = rgb_out[0]/2 + vessel/2
+    rgb_out[1] = rgb_out[1]/2 + vessel/2
+    rgb_out = rgb_out.permute(1, 2, 0).numpy()
+    input_output = np.vstack([rgb_input, rgb_out])
+    return np.hstack([input_output, att_stack])
+
+    # No colormapping
+    # return np.vstack([input_slice[0].numpy().transpose(1, 2, 0).copy(), 
+    #                   np.stack([np.zeros_like(atts), atts, np.zeros_like(atts)], axis=-1), 
+    #                   np.stack([circulatory_atts, np.zeros_like(circulatory_atts), np.zeros_like(circulatory_atts)], axis=-1)])
 
 
 def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size: int, device=torch.device("cuda:0"), info_q: Optional[Queue] = None, uncertainty: Optional[int] = None):
@@ -157,7 +180,7 @@ def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size:
 
         # Front end update
         if info_q is not None:
-            package = build_front_end_package(input_slice, model)
+            package = build_front_end_package(input_slice, model, out)
             info_q.image_to_front_end(package)
             # input_q.put(input_slice)  # sync problems
             # atts, circulatory_atts = model.model.return_atts()

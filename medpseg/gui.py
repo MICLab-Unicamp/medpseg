@@ -34,11 +34,11 @@ from medpseg.utils import DummyTkIntVar
 
 # Set global variable for icon.png location
 if os.name == "nt":
-    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "icon_original.png")
-    ICON_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "icon.png")
+    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "assets", "icon_original.png")
+    ICON_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "assets", "icon.png")
 else:
-    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "icon_original.png")
-    ICON_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "icon.png")
+    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "assets", "icon_original.png")
+    ICON_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "assets", "icon.png")
     
 # Default title global variable
 DEFAULT_TITLE = "Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg)"

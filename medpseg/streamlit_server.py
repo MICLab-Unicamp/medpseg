@@ -27,17 +27,17 @@ LOGGER = get_logger(__name__)
 TMP_DIR = tempfile.gettempdir()
 
 if os.name == "nt":
-    ICON_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "icon.png")
-    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "icon_original.png")
-    DEMO_FILE = os.path.join(site.getsitepackages()[1], "medpseg", "coronacases_100_003.png")
-    VOL_RESP = os.path.join(site.getsitepackages()[1], "medpseg", "respiratory.gif")
-    VOL_DIS = os.path.join(site.getsitepackages()[1], "medpseg", "diseased.gif")
+    ICON_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "assets", "icon.png")
+    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "assets", "icon_original.png")
+    DEMO_FILE = os.path.join(site.getsitepackages()[1], "medpseg", "assets", "coronacases_100_003.png")
+    VOL_RESP = os.path.join(site.getsitepackages()[1], "medpseg", "assets", "respiratory.gif")
+    VOL_DIS = os.path.join(site.getsitepackages()[1], "medpseg", "assets", "diseased.gif")
 else:
-    ICON_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "icon.png")
-    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "icon_original.png")
-    DEMO_FILE = os.path.join(site.getsitepackages()[0], "medpseg", "coronacases_100_003.png")
-    VOL_RESP = os.path.join(site.getsitepackages()[0], "medpseg", "respiratory.gif")
-    VOL_DIS = os.path.join(site.getsitepackages()[0], "medpseg", "diseased.gif")
+    ICON_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "assets", "icon.png")
+    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "assets", "icon_original.png")
+    DEMO_FILE = os.path.join(site.getsitepackages()[0], "medpseg", "assets", "coronacases_100_003.png")
+    VOL_RESP = os.path.join(site.getsitepackages()[0], "medpseg", "assets", "respiratory.gif")
+    VOL_DIS = os.path.join(site.getsitepackages()[0], "medpseg", "assets", "diseased.gif")
 
 
 def run(input_path: str, output_path: str) -> str:

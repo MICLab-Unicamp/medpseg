@@ -128,7 +128,7 @@ def build_front_end_package(input_slice: torch.Tensor, model: PolySeg2DModule, o
     return np.hstack([input_output, att_stack])
 
 
-def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size: int, device=torch.device("cuda:0"), info_q: Optional[Queue] = None, uncertainty: Optional[int] = None):
+def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size: int, device=torch.device("cuda:0"), info_q: Optional[Queue] = None, uncertainty: Optional[int] = None, cli: bool = True):
     '''
     DEVING uncertainty: epistemic uncerainty, predict n times and return the mean and std prediction
     '''
@@ -167,8 +167,7 @@ def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size:
                 uncertainty_stds[key].append(buffer.std(dim=0))
 
         # Front end update
-        if info_q is not None and isinstance(info_q, PrintInterface):
-            print('a')
+        if info_q is not None and isinstance(info_q, PrintInterface) and not cli:
             package = build_front_end_package(input_slice, model, out)
             info_q.image_to_front_end(package)
             # input_q.put(input_slice)  # sync problems
@@ -205,7 +204,8 @@ class PolySegmentationPipeline():
                  batch_size=1,  # increase with high memory gpus
                  cpu=False,
                  output_dir=None,
-                 post=False):  
+                 post=False,
+                 cli=True):  
         self.version = 'silver_gold_gdl'
         self.batch_size = batch_size
         self.device = torch.device("cpu") if cpu else torch.device("cuda:0")
@@ -216,6 +216,7 @@ class PolySegmentationPipeline():
         self.output_dir = output_dir
         self.hparams = self.model.hparams
         self.post = post
+        self.cli = cli
 
     def save_activations(self, poly_out: np.ndarray, airway: np.ndarray, vessel: np.ndarray, uncertainty_std: Optional[Dict[str, np.ndarray]], original_image: sitk.Image, ID: str, dir_array: np.ndarray):
         all_arrays: Dict[str, np.ndarray] = {"polymorphic_lung": poly_out, "airway": airway, "vessel": vessel}
@@ -271,7 +272,7 @@ class PolySegmentationPipeline():
             if uncertainty is not None:
                 tqdm_iter.write(f"Using epistemic uncertainty with {uncertainty} as ensembling strategy.")
 
-            poly_stack_output = poly_stack_predict(self.model.to(self.device), adjusted_volume, batch_size=self.batch_size, device=self.device, info_q=tqdm_iter, uncertainty=uncertainty)
+            poly_stack_output = poly_stack_predict(self.model.to(self.device), adjusted_volume, batch_size=self.batch_size, device=self.device, info_q=tqdm_iter, uncertainty=uncertainty, cli=self.cli)
 
             if uncertainty is not None:
                 poly_stack_output, uncertainty_std = poly_stack_output

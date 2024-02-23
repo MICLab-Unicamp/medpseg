@@ -176,6 +176,13 @@ def check_data():
         raise FileNotFoundError("Number of targets in coronacases/Lung_and_Infection_Mask incorrect, rerun reproduce_evaluation.py")
 
 
+def print_stats(stats):
+    for struct_name, struct_metrics in stats.items():
+        print(f"\n{struct_name}\n")
+        for metric_name, metric_mean_std in struct_metrics.items():
+            print(f"{metric_name}: {metric_mean_std['mean']}+-{metric_mean_std['std']}")
+
+
 def semiseg_eval(metrics):
     with open(os.path.join("dataset", "semiseg", "covid_semi_seg_split.json"), 'r') as split_file:
         test_IDs = json.load(split_file)["test"]
@@ -185,7 +192,7 @@ def semiseg_eval(metrics):
     ggo_targets = (target_array == 1).astype(np.uint8)
     con_targets = (target_array == 2).astype(np.uint8)
 
-    for test_ID in test_IDs:
+    for test_ID in tqdm(test_IDs, desc="Computing 2D metrics for SemiSeg..."):
         ggo_pred = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join("dataset", "semiseg", "medpseg_output", f"{test_ID}_ggo.nii.gz"))).astype(np.uint8)
         con_pred = sitk.GetArrayFromImage(sitk.ReadImage(os.path.join("dataset", "semiseg", "medpseg_output", f"{test_ID}_consolidation.nii.gz"))).astype(np.uint8)
         pred = np.stack([ggo_pred, con_pred], axis=0)
@@ -194,16 +201,20 @@ def semiseg_eval(metrics):
         con_target = con_targets[test_ID:test_ID+1]
         target = np.stack([ggo_target, con_target], axis=0)
         
-        seg_metrics(gts=target, preds=pred, metrics=metrics, struct_names=["semiseg_ggo", "semiseg_consolidation"])
-
-    for struct_name, struct_metrics in metrics.stats().items():
-        print(f"\n{struct_name}\n")
-        for metric_name, metric_mean_std in struct_metrics.items():
-            print(f"{metric_name}: {metric_mean_std['mean']}+-{metric_mean_std['std']}")
+        seg_metrics(gts=target, preds=pred, metrics=metrics, struct_names=["semiseg_2d_ggo", "semiseg_2d_consolidation"])
 
 
 def coronacases_eval(metrics):
-    pass
+    targets = glob.glob(os.path.join("dataset", "coronacases", "Lung_and_Infection_Mask", "*.nii.gz"))
+
+    for target_name in tqdm(targets, desc="Computing 3D metrics for CoronaCases..."):
+        ID = os.path.basename(target_name).replace(".nii.gz", '')
+        target = sitk.GetArrayFromImage(sitk.ReadImage(target_name))
+        inf_target = np.expand_dims((target == 3).astype(np.uint8), 0)
+        inf_pred = np.expand_dims(sitk.GetArrayFromImage(sitk.ReadImage(os.path.join("dataset", "coronacases", "medpseg_output", f"{ID}_findings.nii.gz"))).astype(np.uint8), 0)
+
+        seg_metrics(gts=inf_target, preds=inf_pred, metrics=metrics, struct_names=["coronacases_3d_inf"])
+        
 
 
 if __name__ == "__main__":
@@ -220,15 +231,19 @@ if __name__ == "__main__":
 
         check_data()
 
-        # subprocess.run(["medpseg", 
-        #                 "-i", os.path.join("dataset", "semiseg", "tr_im_slices", "test_slices.txt"), 
-        #                 "-o", os.path.join("dataset", "semiseg", "medpseg_output")])
+        subprocess.run(["medpseg", 
+                        "-i", os.path.join("dataset", "semiseg", "tr_im_slices", "test_slices.txt"), 
+                        "-o", os.path.join("dataset", "semiseg", "medpseg_output")])
         
         subprocess.run(["medpseg", 
                         "-i", os.path.join("dataset", "coronacases", "COVID-19-CT-Seg_20cases"), 
                         "-o", os.path.join("dataset", "coronacases", "medpseg_output"),
                         "--disable_lobe"])
     
+    tqdm.write("Computing metrics...")
     metrics = initialize_metrics_dict()
     semiseg_eval(metrics)
     coronacases_eval(metrics)
+    metrics.save_dictionary(os.path.join("results", "metrics.json"))
+    print_stats(metrics.stats())
+    tqdm.write("\nDone! Metrics are in results folder.")

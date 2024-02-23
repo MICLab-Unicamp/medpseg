@@ -53,7 +53,8 @@ setuptools.setup(
                       'torchinfo',
                       'monai',
                       'imageio',
-                      'nibabel'],
+                      'nibabel',
+                      'wget'],
     entry_points={
         'console_scripts': ["medpseg = medpseg.run:main", "medpseg_cpu = medpseg.run:main_cpu"]
     },

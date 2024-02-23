@@ -29,7 +29,6 @@ def sensitivity(pred: Union[torch.Tensor, np.ndarray],
     '''
     tgt_sum = tgt.sum()
     if tgt_sum == 0:
-        print("Can't measure sensitivity without positive targets")
         return nan
     else:
         return (pred*tgt).sum() / tgt.sum()
@@ -49,7 +48,6 @@ def specificity(pred: Union[torch.Tensor, np.ndarray],
     one_minus_tgt_sum = ones_minus_tgt.sum()
 
     if one_minus_tgt_sum == 0:
-        print("Can't measure specificity without negative targets")
         return nan
 
     return ((ones_minus_pred)*(ones_minus_tgt)).sum() / one_minus_tgt_sum
@@ -68,7 +66,6 @@ def precision(pred, tgt):
 
     TPplusFP = TP + FP
     if TPplusFP == 0:
-        print("Can't measure precision without positives")
         return nan
     else:
         return TP/TPplusFP
@@ -158,19 +155,16 @@ def seg_metrics(gts: np.ndarray, preds: np.ndarray, metrics: Dict[str, Dict[str,
         overlap_measures_filter.Execute(img_pred_sitk, img_gt_sitk)  # this was reversed in an old version, fixed 
         
         if empty_gt and empty_pred:
-            print(f"WARNING: No {str_label} target or prediction, considering Dice 1.0.")
             metrics[str_label]["dice"].append(1.0)
         else:
             metrics[str_label]["dice"].append(overlap_measures_filter.GetDiceCoefficient())
 
         if empty_gt:
-            print(f"WARNING: No {str_label} target, considering no false negatives present.")
             metrics[str_label]["false_negative_error"].append(0.0)
         else:
             metrics[str_label]["false_negative_error"].append(overlap_measures_filter.GetFalseNegativeError())
 
         if empty_pred:
-            print(f"WARNING: No {str_label} prediction, considering no false positives present.")
             metrics[str_label]["false_positive_error"].append(0.0)
         else:
             metrics[str_label]["false_positive_error"].append(overlap_measures_filter.GetFalsePositiveError())

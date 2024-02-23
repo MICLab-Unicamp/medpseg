@@ -303,7 +303,7 @@ class MainWindow(threading.Thread):
             self.runlist = [self.input_path]
         # For a .txt file parse it 
         elif os.path.isfile(self.input_path) and self.input_path.endswith('.txt'):
-            self.txt_file_to_runlist()
+            self.runlist = self.txt_file_to_runlist(self.input_path)
         
         if self.runlist is None:
             error_str = "No valid volume or folder given, please give a nift volume, dcm volume, dcm series folder, folder with NifTs, or a preprocessed grayscale 8-bit (0-255) .png/.jpg/.jpeg. Note we do not support running over a folder of .png/.jpg/.jpeg"

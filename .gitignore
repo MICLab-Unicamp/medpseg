@@ -1,4 +1,7 @@
 # Custom
+ReadMe.txt
+test_slices.txt
+*.png
 output/
 sample_input/
 *.ckpt

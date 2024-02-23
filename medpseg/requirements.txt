@@ -20,3 +20,4 @@ torchinfo
 monai
 imageio
 nibabel
+wget

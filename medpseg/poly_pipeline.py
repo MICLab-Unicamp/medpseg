@@ -142,10 +142,6 @@ def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size:
     uncertainty_means = defaultdict(list)
     uncertainty_stds = defaultdict(list)
 
-    input_q = Queue()
-    att_worker = Thread(target=attention_worker, args=(input_q, model, info_q))
-    att_worker.start()
-
     for input_slice in tqdm(e2d_stack_dataloader, desc=f"Slicing with batch size {batch_size}."):
         if uncertainty is None:
             out = model(input_slice.to(device), stacking=True)
@@ -171,7 +167,8 @@ def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size:
                 uncertainty_stds[key].append(buffer.std(dim=0))
 
         # Front end update
-        if info_q is not None:
+        if info_q is not None and isinstance(info_q, PrintInterface):
+            print('a')
             package = build_front_end_package(input_slice, model, out)
             info_q.image_to_front_end(package)
             # input_q.put(input_slice)  # sync problems
@@ -192,11 +189,6 @@ def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size:
             np_means[key] = torch.cat(y_hat).unsqueeze(0).permute(0, 2, 1, 3, 4)
         for key, y_hat in uncertainty_stds.items():
             np_stds[f"{key}_uncertainty"] = torch.cat(y_hat).unsqueeze(0).permute(0, 2, 1, 3, 4)
-    
-    # End front end worker
-    input_q.put(None) 
-    print("Waiting for front end worker...")
-    att_worker.join()
 
     if uncertainty is None:
         return np_outs

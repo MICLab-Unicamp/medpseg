@@ -1,0 +1,1 @@
+Stores CoronaCases CT segmentation target files (coronacases_00x.nii.gz)

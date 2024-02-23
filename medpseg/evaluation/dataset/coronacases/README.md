@@ -1,0 +1,1 @@
+Where CoronaCases data should be stored

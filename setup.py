@@ -54,7 +54,8 @@ setuptools.setup(
                       'monai',
                       'imageio',
                       'nibabel',
-                      'wget'],
+                      'wget',
+                      'json2table'],
     entry_points={
         'console_scripts': ["medpseg = medpseg.run:main", "medpseg_cpu = medpseg.run:main_cpu"]
     },

@@ -21,3 +21,4 @@ monai
 imageio
 nibabel
 wget
+json2table

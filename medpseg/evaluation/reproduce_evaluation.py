@@ -9,6 +9,7 @@ This file should allow for reproduction of CoronaCases and SemiSeg results autom
 import os
 import wget
 import glob
+import copy
 import json
 import torch
 import zipfile
@@ -18,7 +19,7 @@ import subprocess
 import numpy as np
 import SimpleITK as sitk
 from tqdm import tqdm
-from typing import Union, Tuple
+from typing import Union, Tuple, Dict
 from medpseg.seg_metrics import initialize_metrics_dict, seg_metrics
 
 
@@ -214,36 +215,60 @@ def coronacases_eval(metrics):
         inf_pred = np.expand_dims(sitk.GetArrayFromImage(sitk.ReadImage(os.path.join("dataset", "coronacases", "medpseg_output", f"{ID}_findings.nii.gz"))).astype(np.uint8), 0)
 
         seg_metrics(gts=inf_target, preds=inf_pred, metrics=metrics, struct_names=["coronacases_3d_inf"])
-        
 
+
+def generate_table(stats_file):
+    from json2table import convert
+    INCLUDED_METRICS = ["dice", "false_negative_error", "false_positive_error", "sensitivity", "specificity"]
+    
+    stats_dict: Dict[str, Dict[str, Dict[str, float]]] = json.load(stats_file)
+    
+    reference_dict = copy.deepcopy(stats_dict)
+    for struct, metrics in reference_dict.items():
+        for metric in metrics.keys():
+            if metric not in INCLUDED_METRICS:
+                stats_dict[struct].pop(metric)
+
+    html = convert(stats_dict, build_direction="TOP_TO_BOTTOM", table_attributes={"style": "width:90%", "border" : 1})
+
+    with open(os.path.join("results", "table.html"), 'w') as table_file:
+        table_file.write(html)
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip_to_prediction", action="store_true", help="Use if data is already downloaded and organized correctly.")
     parser.add_argument("--skip_to_evaluation", action="store_true", help="Use if outputs are already computed.")
+    parser.add_argument("--skip_to_table", action="store_true", help="Use if metrics are already computed.")
     args = parser.parse_args()
 
-    if not args.skip_to_evaluation:
-        if not args.skip_to_prediction:
-            download_data()
-            unzip()
-            save_semiseg_pngs()
+    if not args.skip_to_table:
+        if not args.skip_to_evaluation:
+            if not args.skip_to_prediction:
+                download_data()
+                unzip()
+                save_semiseg_pngs()
 
-        check_data()
+            check_data()
 
-        subprocess.run(["medpseg", 
-                        "-i", os.path.join("dataset", "semiseg", "tr_im_slices", "test_slices.txt"), 
-                        "-o", os.path.join("dataset", "semiseg", "medpseg_output")])
+            subprocess.run(["medpseg", 
+                            "-i", os.path.join("dataset", "semiseg", "tr_im_slices", "test_slices.txt"), 
+                            "-o", os.path.join("dataset", "semiseg", "medpseg_output")])
+            
+            subprocess.run(["medpseg", 
+                            "-i", os.path.join("dataset", "coronacases", "COVID-19-CT-Seg_20cases"), 
+                            "-o", os.path.join("dataset", "coronacases", "medpseg_output"),
+                            "--disable_lobe"])
         
-        subprocess.run(["medpseg", 
-                        "-i", os.path.join("dataset", "coronacases", "COVID-19-CT-Seg_20cases"), 
-                        "-o", os.path.join("dataset", "coronacases", "medpseg_output"),
-                        "--disable_lobe"])
-    
-    tqdm.write("Computing metrics...")
-    metrics = initialize_metrics_dict()
-    semiseg_eval(metrics)
-    coronacases_eval(metrics)
-    metrics.save_dictionary(os.path.join("results", "metrics.json"))
-    print_stats(metrics.stats())
+        tqdm.write("Computing metrics...")
+        metrics = initialize_metrics_dict()
+        semiseg_eval(metrics)
+        coronacases_eval(metrics)
+        json_dict_path = os.path.join("results", "metrics.json")
+        metrics.save_dictionary(json_dict_path)
+        print_stats(metrics.stats())
+
+    with open(os.path.join("results", "metrics_stats.json"), 'r') as json_dict_file:
+        generate_table(json_dict_file)
+
     tqdm.write("\nDone! Metrics are in results folder.")

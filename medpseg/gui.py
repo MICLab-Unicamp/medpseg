@@ -427,10 +427,10 @@ class MainWindow(threading.Thread):
 
             # Initialization text, including initializing output
             self.write_to_textbox(f"Welcome to MEDPSeg! {DEFAULT_TITLE}")
-            self.write_to_textbox('Check "Display" to attempt to display results using ITKSnap (default on).')
+            self.write_to_textbox('Check "Display" to attempt to display results using ITKSnap (default off).')
             self.write_to_textbox('The "Post" option selects the largets connected component of airway and vessel segmentation. This can cause problems in low-resolution scans (default off).')
             self.write_to_textbox('The "Save act." option saves activations and attention maps on the output folder, uses more RAM (default off).')
-            self.write_to_textbox('The "Lobe seg." option performs 3D lobe segmentation with a trained VNet. Includes per lobe reports in the output .csv sheet. Adds around 1 minute more processing time per scan, using a GPU (default on).')
+            self.write_to_textbox('The "Lobe seg." option performs 3D lobe segmentation with a trained VNet. Includes per lobe reports in the output .csv sheet. Adds around 1 minute more processing time per scan, using a GPU (default off).')
             if self.args.output_folder is not None:
                 os.makedirs(self.args.output_folder, exist_ok=True)
                 self.write_to_textbox(f"Results will be in the '{self.args.output_folder}' folder")

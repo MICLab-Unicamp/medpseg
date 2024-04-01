@@ -107,7 +107,7 @@ class LoberModule(pl.LightningModule):
 											 overlap=0.5,
 											 mode="gaussian",
 											 progress=True,
-											 device=self.device).softmax(dim=1).detach().cpu()  # 5 dims
+											 device=self.device).softmax(dim=1).detach().float().cpu()  # 5 dims
 		
 		# Put yourself on the cpu after predicting
 		self.cpu()

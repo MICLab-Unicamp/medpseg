@@ -124,7 +124,8 @@ class MEDSeg(nn.Module):
               f"learnable norm {self.learnable_norm_module} circulatory_branch {circulatory_branch} deep_supervision {deep_supervision} self attention {self_attention}")
 
     def __del__(self):
-        self.att_pool.close()
+        if self.att_pool is not None:
+            self.att_pool.close()
 
     def extract_backbone_features(self, inputs):
         return self.model.extract_backbone_features(inputs)

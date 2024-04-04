@@ -583,7 +583,9 @@ def pipeline(runlist: List[str],
                 output_lobes_path = output_lung_path.replace("_lung.nii.gz", "_lobes.nii.gz")
                 lobes_image = sitk.ReadImage(output_lobes_path)
                 lobes = sitk.GetArrayFromImage(lobes_image)
-                lobes = lobes*lung
+                if post:
+                    info_q.put(("write", f"Filtering lobes by lung segmentation."))
+                    lobes = lobes*lung
                 int_to_8bit_rgb(lobes, slice_background, output_lobes_path.replace(".nii.gz", ".png"), slicify)
                 lobes_image_fixed = sitk.GetImageFromArray(lobes)
                 lobes_image_fixed.CopyInformation(lobes_image)

@@ -8,7 +8,7 @@ pandas
 torchvision
 pytorch-lightning
 efficientnet_pytorch
-connected-components-3d
+connected-components-3d==3.12.6
 psutil
 gputil
 opencv-python
@@ -17,7 +17,7 @@ pydicom
 matplotlib
 timm
 torchinfo
-monai
+monai==1.3.0
 imageio
 nibabel
 wget

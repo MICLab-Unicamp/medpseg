@@ -256,9 +256,7 @@ def pipeline(runlist: List[str],
             del lung_25d_activations
 
             if lung.max() == 0:
-                info_q.put(("write", f"ERROR: Lung not found in image, aborting. Are you sure this image is of a chest CT scan?"))
-                info_q.put(None)
-                return
+                info_q.put(("write", f"\nCritical WARNING: Lung not found in image. Are you sure this image is of a chest CT scan?\n"))
             
             info_q.put(("write", "Post-processing, saving outputs and report."))
             lung = get_connected_components(lung, return_largest=2)[0].astype(np.uint8)

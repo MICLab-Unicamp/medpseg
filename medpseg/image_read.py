@@ -55,6 +55,11 @@ def read_preprocess(input_path, norm):
 
     # Pre processing
     data = torch.from_numpy(data).float()
+    input_min, input_max = data.min(), data.max()
+    if abs(input_min - input_max) < 100:
+        raise ValueError(f"Unusual input scan, minimum {input_min} and maximum {input_max} values don't appear to be from a Hounsfield Unit intensities.\n"
+                          "Please use scans with intensities in HU, or use .png images normalized as described in the README.md.\n"
+                          "If this is a mistake, please create an issue.")
     if norm:
         data_min, data_max = -1024, 600
         data = torch.clip(data, data_min, data_max)

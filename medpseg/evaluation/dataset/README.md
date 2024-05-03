@@ -1,0 +1,1 @@
+Store raw data downloaded from CoronaCases and SemiSeg and abstraction logic.

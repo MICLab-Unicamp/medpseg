@@ -101,13 +101,13 @@ class LoberModule(pl.LightningModule):
 
 		with torch.no_grad():
 			y_hat = sliding_window_inference(x.to(self.device),
-											 roi_size=(64, 128, 128),
+											 roi_size=(80, 160, 160),  # For lower GPU usage, results could be better with 128, 256, 256
 											 sw_batch_size=1, 
 											 predictor=self,
-											 overlap=0.5,
+											 overlap=0.2,
 											 mode="gaussian",
 											 progress=True,
-											 device=self.device).softmax(dim=1).detach().cpu()  # 5 dims
+											 device=self.device).softmax(dim=1).detach().float().cpu()  # 5 dims
 		
 		# Put yourself on the cpu after predicting
 		self.cpu()

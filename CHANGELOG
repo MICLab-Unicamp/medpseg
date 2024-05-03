@@ -1,3 +1,9 @@
+v4.1.0
+* Display attention heatmap during prediction
+* Lobe segmentation and display options are not default anymore
+* Improvements in repository organization
+* Reproducibility of evaluation in CoronaCases and SemiSeg
+
 v4.0.0
 * Public release! 
 

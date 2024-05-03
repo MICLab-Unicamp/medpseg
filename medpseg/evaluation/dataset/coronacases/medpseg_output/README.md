@@ -1,0 +1,1 @@
+Store outputs from MEDPSeg over CoronaCases

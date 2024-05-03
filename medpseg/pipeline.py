@@ -100,7 +100,8 @@ def pipeline(runlist: List[str],
              min_hu: int = -1024,
              max_hu: int = 600,
              slicify: bool = False,
-             lobe_seg: bool = True):  
+             lobe_seg: bool = True,
+             cli: bool = True):  
     
     try:
         # General exception wrapper, sends it through info_q and quits if anything goes wrong
@@ -115,7 +116,7 @@ def pipeline(runlist: List[str],
         poly_weight = os.path.join(pkg_path, "poly_medseg_25d_fix.ckpt")
         check_weight(poly_weight)
         poly_model = PolySegmentationPipeline(weight=poly_weight,
-                                              batch_size=batch_size, cpu=cpu, output_dir=output_path, post=post)
+                                              batch_size=batch_size, cpu=cpu, output_dir=output_path, post=post, cli=cli)
 
         # We still use the poly_lung part of the old pipeline
         poly_lung_weight = os.path.join(pkg_path, "poly_lung.ckpt")
@@ -255,9 +256,7 @@ def pipeline(runlist: List[str],
             del lung_25d_activations
 
             if lung.max() == 0:
-                info_q.put(("write", f"ERROR: Lung not found in image, aborting. Are you sure this image is of a chest CT scan?"))
-                info_q.put(None)
-                return
+                info_q.put(("write", f"\nCritical WARNING: Lung not found in image. Are you sure this image is of a chest CT scan?\n"))
             
             info_q.put(("write", "Post-processing, saving outputs and report."))
             lung = get_connected_components(lung, return_largest=2)[0].astype(np.uint8)
@@ -582,7 +581,9 @@ def pipeline(runlist: List[str],
                 output_lobes_path = output_lung_path.replace("_lung.nii.gz", "_lobes.nii.gz")
                 lobes_image = sitk.ReadImage(output_lobes_path)
                 lobes = sitk.GetArrayFromImage(lobes_image)
-                lobes = lobes*lung
+                if post:
+                    info_q.put(("write", f"Filtering lobes by lung segmentation."))
+                    lobes = lobes*lung
                 int_to_8bit_rgb(lobes, slice_background, output_lobes_path.replace(".nii.gz", ".png"), slicify)
                 lobes_image_fixed = sitk.GetImageFromArray(lobes)
                 lobes_image_fixed.CopyInformation(lobes_image)

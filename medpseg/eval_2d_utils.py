@@ -12,7 +12,7 @@ import torch
 from torch.utils.data import DataLoader
 from multiprocessing import cpu_count
 from tqdm import tqdm
-from medpseg.uncertainty import get_epistemic_uncertainty
+from medpseg.utils.uncertainty import get_epistemic_uncertainty
 from collections import defaultdict
 
 

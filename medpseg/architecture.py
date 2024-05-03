@@ -22,7 +22,7 @@ from typing import List, Optional, Tuple
 from scipy.ndimage import zoom
 from torch import nn
 from efficientnet_pytorch.utils import round_filters
-
+from multiprocessing.pool import ThreadPool
 from medpseg.edet.modeling_efficientdet import EfficientDetForSemanticSegmentation
 from medpseg.hu_clip_norm_module import CTHUClipNormModule, CTHUClipZNormModule
 
@@ -49,7 +49,7 @@ class MEDSeg(nn.Module):
         squeeze = False if expand_bifpn is None else "cat" in expand_bifpn  # Mostly false, lets deprecate
         if squeeze:
             raise DeprecationWarning("Not squeezing bifpn output anymore")
-
+        self.att_pool = None
         self.circulatory_branch = circulatory_branch
         self.self_attention = self_attention
         self.con_detecting = con_detecting
@@ -123,6 +123,10 @@ class MEDSeg(nn.Module):
               f"backbone: {backbone}, pretrained: {pretrained}, expand_bifpn: {expand_bifpn}, pad align DISABLED, stem_replacement {stem_replacement} compound_coef {compound_coef} "
               f"learnable norm {self.learnable_norm_module} circulatory_branch {circulatory_branch} deep_supervision {deep_supervision} self attention {self_attention}")
 
+    def __del__(self):
+        if self.att_pool is not None:
+            self.att_pool.close()
+
     def extract_backbone_features(self, inputs):
         return self.model.extract_backbone_features(inputs)
 
@@ -169,31 +173,56 @@ class MEDSeg(nn.Module):
         
         return x
 
-    def return_atts(self) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+    def return_atts(self, order=3, hr_only=False) -> Tuple[List[np.ndarray], List[np.ndarray]]:
         '''
         Returns attentions interpolated to input size (ndarray)
 
         Atts in return list are higher to low resolution
         '''
-        # Squeeze channel
-        atts: List[torch.Tensor] = [module.att.squeeze(1) for module in self.model.attention_modules]  # [B, X, Y]
-        zoomed_atts = []
-        for att in atts:
-            ishape = np.array(self.input_shape)
-            ashape = np.array(att.shape)
-            assert len(ishape) == len(ashape), f"{ishape} != {ashape}, attention only works in 3D"
-            zoom_factors = (ishape/ashape).tolist()
-            zoomed_atts.append(zoom(att.detach().cpu().numpy(), zoom_factors))
+        # High resolution only for faster computation
+        if hr_only:
+            if self.att_pool is None or (self.att_pool is not None and self.att_pool._processes != 2):
+                self.att_pool = ThreadPool(2)
+            atts: List[np.ndarray] = [self.model.attention_modules[0].att.detach().cpu().squeeze(1).numpy()]  # [B, X, Y]
+            circulatory_atts: List[np.ndarray] = [self.model.circulatory_classifier.attention_modules[0].att.detach().cpu().squeeze(1).numpy()]
+        else:
+            if self.att_pool is None or (self.att_pool is not None and self.att_pool._processes != 10):
+                self.att_pool = ThreadPool(10)
+            atts: List[np.ndarray] = [module.att.detach().cpu().squeeze(1).numpy() for module in self.model.attention_modules]  # [B, X, Y]
+            circulatory_atts: List[np.ndarray] = [module.att.detach().cpu().squeeze(1).numpy() for module in self.model.circulatory_classifier.attention_modules]  # [B, X, Y]
 
-        zoomed_circulatory_atts = []
+        att_packages: List[Tuple[np.ndarray, np.ndarray, np.ndarray, int]] = [(np.array(self.input_shape), 
+                                                                               np.array(att.shape), 
+                                                                               att, 
+                                                                               order) for att in atts]        
+        zoomed_atts_result =  self.att_pool.map_async(return_att_worker, iterable=att_packages)
+    
         if self.circulatory_branch:
-            circulatory_atts: List[torch.Tensor] = [module.att.squeeze(1) for module in self.model.circulatory_classifier.attention_modules]
-            for att in circulatory_atts:
-                ishape = np.array(self.input_shape)
-                ashape = np.array(att.shape)
-                assert len(ishape) == len(ashape), f"{ishape} != {ashape}, attention only works in 3D"
-                zoom_factors = (ishape/ashape).tolist()
-                zoomed_circulatory_atts.append(zoom(att.detach().cpu().numpy(), zoom_factors))
+            catt_packages: List[Tuple[np.ndarray, np.ndarray, np.ndarray, int]] = [(np.array(self.input_shape), 
+                                                                                    np.array(catt.shape), 
+                                                                                    catt, 
+                                                                                    order) for catt in circulatory_atts]        
+            zoomed_circulatory_atts =  self.att_pool.map(return_att_worker, iterable=catt_packages)
+    
+        zoomed_atts = zoomed_atts_result.get()
+        # Sinlge thread version
+        # atts: List[np.ndarray] = [module.att.squeeze(1) for module in self.model.attention_modules]  # [B, X, Y]
+        # zoomed_atts = []
+        # for att in atts:
+        #     ishape = np.array(self.input_shape)
+        #     ashape = np.array(att.shape)
+        #     assert len(ishape) == len(ashape), f"{ishape} != {ashape}, attention only works in 3D"
+        #     zoom_factors = (ishape/ashape).tolist()
+        #     zoomed_atts.append(zoom(att.detach().cpu().numpy(), zoom_factors, order=order))
+        # zoomed_circulatory_atts = []
+        # if self.circulatory_branch:
+        #     circulatory_atts: List[torch.Tensor] = [module.att.squeeze(1) for module in self.model.circulatory_classifier.attention_modules]
+        #     for att in circulatory_atts:
+        #         ishape = np.array(self.input_shape)
+        #         ashape = np.array(att.shape)
+        #         assert len(ishape) == len(ashape), f"{ishape} != {ashape}, attention only works in 3D"
+        #         zoom_factors = (ishape/ashape).tolist()
+        #         zoomed_circulatory_atts.append(zoom(att.detach().cpu().numpy(), zoom_factors, order=order))
 
         return zoomed_atts, zoomed_circulatory_atts
 
@@ -216,6 +245,15 @@ class MEDSeg(nn.Module):
             ret = self.con_detector(x)
 
         return ret
+
+def return_att_worker(x):
+    '''
+    Attempt to real time compute attentions with multiprocessing
+    '''
+    ishape, ashape, att, order = x
+    assert len(ishape) == len(ashape), f"{ishape} != {ashape}, attention only works in 3D"
+    zoom_factors = (ishape/ashape).tolist()
+    return zoom(att, zoom_factors, order=order)
 
 
 class EffNet3DStemReplacement(nn.Module):

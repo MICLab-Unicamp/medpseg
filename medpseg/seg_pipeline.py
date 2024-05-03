@@ -107,14 +107,13 @@ class SegmentationPipeline():
             
             if lung_volume < .5:
                 # Lung not detected!
-                tqdm_iter.write("ERROR: Lung doesn't seen to be present in image! Aborting.")
-                output_f = output_f_sm_consensus = atts = None
-            else:
-                # Lung detected, if lung only mode return here
-                if lung_only:
-                    return left_right_label, left_lung_volume, right_lung_volume
+                tqdm_iter.write("\nCritical WARNING: Lung doesn't seen to be present in image! Continuing, but this might not be a chest CT image and results might be weird.\n")
+                
+            # If lung only mode return here, this is the only use case currently
+            if lung_only:
+                return left_right_label, left_lung_volume, right_lung_volume
 
-                # Removed all deprecated code from old medseg in (31 Oct 2023)
+            # Removed all deprecated code from old medseg in (31 Oct 2023)
     
 
 def get_atts_work(encoder, pre_shape):

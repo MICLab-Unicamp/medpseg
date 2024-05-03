@@ -34,11 +34,11 @@ from medpseg.utils import DummyTkIntVar
 
 # Set global variable for icon.png location
 if os.name == "nt":
-    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "icon_original.png")
-    ICON_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "icon.png")
+    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "assets", "icon_original.png")
+    ICON_PNG = os.path.join(site.getsitepackages()[1], "medpseg", "assets", "icon.png")
 else:
-    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "icon_original.png")
-    ICON_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "icon.png")
+    ICON_ORIGINAL_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "assets", "icon_original.png")
+    ICON_PNG = os.path.join(site.getsitepackages()[0], "medpseg", "assets", "icon.png")
     
 # Default title global variable
 DEFAULT_TITLE = "Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg)"
@@ -179,7 +179,8 @@ class MainWindow(threading.Thread):
                                                                 self.args.min_hu,
                                                                 self.args.max_hu,
                                                                 self.args.slicify,
-                                                                bool(self.lobe_seg.get())))
+                                                                bool(self.lobe_seg.get()),
+                                                                self.cli))
         
         # Start thread for communication between pipeline and GUI
         self.pipeline_comms_thread = threading.Thread(target=self.pipeline_comms)                                                                
@@ -303,7 +304,7 @@ class MainWindow(threading.Thread):
             self.runlist = [self.input_path]
         # For a .txt file parse it 
         elif os.path.isfile(self.input_path) and self.input_path.endswith('.txt'):
-            self.txt_file_to_runlist()
+            self.runlist = self.txt_file_to_runlist(self.input_path)
         
         if self.runlist is None:
             error_str = "No valid volume or folder given, please give a nift volume, dcm volume, dcm series folder, folder with NifTs, or a preprocessed grayscale 8-bit (0-255) .png/.jpg/.jpeg. Note we do not support running over a folder of .png/.jpg/.jpeg"
@@ -426,10 +427,10 @@ class MainWindow(threading.Thread):
 
             # Initialization text, including initializing output
             self.write_to_textbox(f"Welcome to MEDPSeg! {DEFAULT_TITLE}")
-            self.write_to_textbox('Check "Display" to attempt to display results using ITKSnap (default on).')
+            self.write_to_textbox('Check "Display" to attempt to display results using ITKSnap (default off).')
             self.write_to_textbox('The "Post" option selects the largets connected component of airway and vessel segmentation. This can cause problems in low-resolution scans (default off).')
             self.write_to_textbox('The "Save act." option saves activations and attention maps on the output folder, uses more RAM (default off).')
-            self.write_to_textbox('The "Lobe seg." option performs 3D lobe segmentation with a trained VNet. Includes per lobe reports in the output .csv sheet. Adds around 1 minute more processing time per scan, using a GPU (default on).')
+            self.write_to_textbox('The "Lobe seg." option performs 3D lobe segmentation with a trained VNet. Includes per lobe reports in the output .csv sheet. Adds around 1 minute more processing time per scan, using a GPU (default off).')
             if self.args.output_folder is not None:
                 os.makedirs(self.args.output_folder, exist_ok=True)
                 self.write_to_textbox(f"Results will be in the '{self.args.output_folder}' folder")
@@ -468,7 +469,7 @@ class MainWindow(threading.Thread):
             self.gpu_ram.pack(side='left')
 
             # Initializing checkboxes for GUI arguments
-            self.display = tk.IntVar(value=1)
+            self.display = tk.IntVar(value=0)
             c1 = tk.Checkbutton(self.ws, text='Display', variable=self.display, onvalue=1, offvalue=0, state='active')
             c1.config(font=("Sans", "14"))
             c1.pack(side='left')
@@ -483,7 +484,7 @@ class MainWindow(threading.Thread):
             c4.config(font=("Sans", "14"))
             c4.pack(side='left')
 
-            self.lobe_seg = tk.IntVar(value=1)
+            self.lobe_seg = tk.IntVar(value=0)
             c5 = tk.Checkbutton(self.ws, text='Lobe seg.', variable=self.lobe_seg, onvalue=1, offvalue=0, state='active')
             c5.config(font=("Sans", "14"))
             c5.pack(side='left')

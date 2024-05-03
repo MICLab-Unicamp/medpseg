@@ -1,0 +1,1 @@
+Stores CoronaCases CT scan files (coronacases_00x.nii.gz)

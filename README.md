@@ -1,7 +1,7 @@
 # Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg): End-to-end segmentation of pulmonary structures and lesions in computed tomography
 Welcome to MEDPSeg. This is a new version of our old [MEDSeg](https://github.com/MICLab-Unicamp/medseg) methodology. In our work, we take advantage of the hierarchical nature of lesion annotation inside the lung to optimize over heterogeneous data and labels! Multitasking of pulmonary artery and airways is also involved. In this repository you can reproduce trained MEDPSeg's automated segmentation capabilities using a graphical tool or command line interface, installed through pip. 
 
-![Polymorphic and Multitask Learning](medpseg/graphic_summary.png "Polymorphic and Multitask Learning")
+![Polymorphic and Multitask Learning](medpseg/assets/graphic_summary.png "Polymorphic and Multitask Learning")
 
 The manuscript for this method is under submission, but you can check our arXiv pre-print!
 
@@ -74,7 +74,7 @@ If you don't want to use a GPU, run this command:
 
 The above commands should launch a Graphical User Interface (GUI). Following is how the GUI will look like:
 
-![Graphical user interface](medpseg/gui.png "Graphical user interface")
+![Graphical user interface](medpseg/assets/gui.png "Graphical user interface")
 
 If you don't want to use the GUI, give --input_folder/-i and --output_folder/-o arguments to run in a folder of exams. Check the --help command for more details and help in general for using the command line interface.
 
@@ -82,8 +82,11 @@ Outputs will include a general report in the form of a .csv sheet and the masks 
 
 Outputs for PARSE013       |  Outputs for CoronaCases003
 :-------------------------:|:-------------------------:
-![](medpseg/respiratory.gif)  |  ![](medpseg/diseased.gif)
+![](medpseg/assets/respiratory.gif)  |  ![](medpseg/assets/diseased.gif)
 
+## Evaluation
+
+Check our evaluation reproducibility code for CoronaCases and SemiSeg test results in this ![link](medpseg/evaluation/README.md).
 
 ## Running in .JPG/.PNG images
 
@@ -100,7 +103,7 @@ If you know what MIN and MAX HU clip was used originally to create the image, yo
 
 Following are results of running in on slice 100 of coronacases ID: 003. Note that airway and pulmonary artery performance might be lower in single slice prediction, since those are volumetric tubular structures usually segmented in high resolution 3D CT. 
 
-![Outputs over 2D image](medpseg/slice_demo.png "Outputs over 2D image")
+![Outputs over 2D image](medpseg/assets/slice_demo.png "Outputs over 2D image")
 
 ## How to train?
 

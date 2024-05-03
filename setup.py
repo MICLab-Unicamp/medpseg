@@ -42,7 +42,7 @@ setuptools.setup(
                       'torchvision', 
                       'pytorch-lightning', 
                       'efficientnet_pytorch', 
-                      'connected-components-3d', 
+                      'connected-components-3d==3.12.6', 
                       'psutil', 
                       'gputil', 
                       'opencv-python', 
@@ -51,12 +51,14 @@ setuptools.setup(
                       'matplotlib',
                       'timm',
                       'torchinfo',
-                      'monai',
+                      'monai==1.3.0',
                       'imageio',
-                      'nibabel'],
+                      'nibabel',
+                      'wget',
+                      'json2table'],
     entry_points={
         'console_scripts': ["medpseg = medpseg.run:main", "medpseg_cpu = medpseg.run:main_cpu"]
     },
     include_package_data=True,
-    package_data={'medpseg': ["icon.png", "icon_original.png", "coronacases_100_003.png", "respiratory.gif", "diseased.gif", "poly_medseg_25d_fix.ckpt", "poly_lung.ckpt", "lober.ckpt"]} # v4 removed all old weight requirements
+    package_data={'medpseg': ["assets/icon.png", "assets/icon_original.png", "assets/coronacases_100_003.png", "assets/respiratory.gif", "assets/diseased.gif", "poly_medseg_25d_fix.ckpt", "poly_lung.ckpt", "lober.ckpt"]} # v4 removed all old weight requirements
 )

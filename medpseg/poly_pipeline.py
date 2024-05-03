@@ -22,7 +22,9 @@ from tqdm import tqdm
 from collections import defaultdict
 from operator import itemgetter
 from typing import Dict, Optional
-from multiprocessing import Queue
+from queue import Queue
+from threading import Thread
+from medpseg.utils.turbo_colormap import turbo_colormap_data
 
 
 def get_connected_components(volume, return_largest=2, verbose=False):
@@ -85,7 +87,48 @@ class PrintInterface():
         self.tqdm_iter.put(("icon", ''))
 
 
-def poly_stack_predict(model: torch.nn.Module, volume: torch.Tensor, batch_size: int, device=torch.device("cuda:0"), info_q: Optional[Queue] = None, uncertainty: Optional[int] = None):
+def attention_worker(input_q: Queue, model:  PolySeg2DModule, info_q: PrintInterface):
+    '''
+    Computes attention and input image for front end in a thread
+    '''
+    print("Attention worker started.")
+    while True:
+        input_slice = input_q.get()
+        
+        if input_slice is None:
+            print("Attention worker done.")
+            return
+
+        package = build_front_end_package(input_slice, model)
+        info_q.image_to_front_end(package)
+
+def build_front_end_package(input_slice: torch.Tensor, model: PolySeg2DModule, outs: Dict[str, torch.Tensor]):
+    '''
+    Builds data to be sent to front end for display
+    '''
+    atts, circulatory_atts = model.model.return_atts(order=1, hr_only=True)
+
+    # Weight the same as loss: 0.75 + exponential decay on weight starting from [1:]
+    atts = np.stack([atts[0]*0.75] + [att*(2**(-1*(r+3))) for r, att in enumerate(atts[1:])], axis=0).sum(axis=0).squeeze()
+    circulatory_atts = np.stack([circulatory_atts[0]*0.75] + [catt*(1/(2**(-1*(r+3)))) for r, catt in enumerate(circulatory_atts[1:])], axis=0).sum(axis=0).squeeze()
+    
+    # Colormapping, setting RGB values, 2x2 mosaic: [[input, att], [seg, att]]
+    rgb_input = input_slice[0].numpy().transpose(1, 2, 0).copy()
+    integer_scalar_array = (np.vstack([atts, circulatory_atts])*255).astype(np.uint8)
+    att_stack = turbo_colormap_data[integer_scalar_array]
+    rgb_out = outs["main"].detach().cpu().squeeze()[1:]
+    atm = outs["atm"].detach().cpu().squeeze()[1]
+    vessel = outs["vessel"].detach().cpu().squeeze()[1]
+    rgb_out[1] = rgb_out[1]/2 + atm/2
+    rgb_out[2] = rgb_out[2]/2 + atm/2
+    rgb_out[0] = rgb_out[0]/2 + vessel/2
+    rgb_out[1] = rgb_out[1]/2 + vessel/2
+    rgb_out = rgb_out.permute(1, 2, 0).numpy()
+    input_output = np.vstack([rgb_input, rgb_out])
+    return np.hstack([input_output, att_stack])
+
+
+def poly_stack_predict(model: PolySeg2DModule, volume: torch.Tensor, batch_size: int, device=torch.device("cuda:0"), info_q: Optional[Queue] = None, uncertainty: Optional[int] = None, cli: bool = True):
     '''
     DEVING uncertainty: epistemic uncerainty, predict n times and return the mean and std prediction
     '''
@@ -100,11 +143,6 @@ def poly_stack_predict(model: torch.nn.Module, volume: torch.Tensor, batch_size:
     uncertainty_stds = defaultdict(list)
 
     for input_slice in tqdm(e2d_stack_dataloader, desc=f"Slicing with batch size {batch_size}."):
-        if info_q is not None:
-            package = input_slice[0].numpy().transpose(1, 2, 0).copy()
-            # Not necessary anymore with current pre processing: September 2023
-            # package = (package + 1024) / (600 + 1024)
-            info_q.image_to_front_end(package)
         if uncertainty is None:
             out = model(input_slice.to(device), stacking=True)
             for key, y_hat in out.items():
@@ -128,6 +166,17 @@ def poly_stack_predict(model: torch.nn.Module, volume: torch.Tensor, batch_size:
                 uncertainty_means[key].append(buffer.mean(dim=0))
                 uncertainty_stds[key].append(buffer.std(dim=0))
 
+        # Front end update
+        if info_q is not None and isinstance(info_q, PrintInterface) and not cli:
+            package = build_front_end_package(input_slice, model, out)
+            info_q.image_to_front_end(package)
+            # input_q.put(input_slice)  # sync problems
+            # atts, circulatory_atts = model.model.return_atts()
+            # atts = np.stack(atts).mean(axis=0).squeeze()
+            # circulatory_atts = np.stack(circulatory_atts).mean(axis=0).squeeze()
+            # package = np.hstack([input_slice[0].numpy().transpose(1, 2, 0).copy(), np.stack([atts, np.zeros_like(atts), circulatory_atts], axis=-1)])
+            # info_q.image_to_front_end(package)
+
     # Certain prediction volumes. Will no run if in uncertain mode.
     for key, y_hat in outs.items():
         np_outs[key] = torch.cat(y_hat).unsqueeze(0).permute(0, 2, 1, 3, 4)
@@ -139,7 +188,7 @@ def poly_stack_predict(model: torch.nn.Module, volume: torch.Tensor, batch_size:
             np_means[key] = torch.cat(y_hat).unsqueeze(0).permute(0, 2, 1, 3, 4)
         for key, y_hat in uncertainty_stds.items():
             np_stds[f"{key}_uncertainty"] = torch.cat(y_hat).unsqueeze(0).permute(0, 2, 1, 3, 4)
-    
+
     if uncertainty is None:
         return np_outs
     else:
@@ -155,7 +204,8 @@ class PolySegmentationPipeline():
                  batch_size=1,  # increase with high memory gpus
                  cpu=False,
                  output_dir=None,
-                 post=False):  
+                 post=False,
+                 cli=True):  
         self.version = 'silver_gold_gdl'
         self.batch_size = batch_size
         self.device = torch.device("cpu") if cpu else torch.device("cuda:0")
@@ -166,6 +216,7 @@ class PolySegmentationPipeline():
         self.output_dir = output_dir
         self.hparams = self.model.hparams
         self.post = post
+        self.cli = cli
 
     def save_activations(self, poly_out: np.ndarray, airway: np.ndarray, vessel: np.ndarray, uncertainty_std: Optional[Dict[str, np.ndarray]], original_image: sitk.Image, ID: str, dir_array: np.ndarray):
         all_arrays: Dict[str, np.ndarray] = {"polymorphic_lung": poly_out, "airway": airway, "vessel": vessel}
@@ -221,7 +272,7 @@ class PolySegmentationPipeline():
             if uncertainty is not None:
                 tqdm_iter.write(f"Using epistemic uncertainty with {uncertainty} as ensembling strategy.")
 
-            poly_stack_output = poly_stack_predict(self.model.to(self.device), adjusted_volume, batch_size=self.batch_size, device=self.device, info_q=tqdm_iter, uncertainty=uncertainty)
+            poly_stack_output = poly_stack_predict(self.model.to(self.device), adjusted_volume, batch_size=self.batch_size, device=self.device, info_q=tqdm_iter, uncertainty=uncertainty, cli=self.cli)
 
             if uncertainty is not None:
                 poly_stack_output, uncertainty_std = poly_stack_output

@@ -84,6 +84,9 @@ Outputs for PARSE013       |  Outputs for CoronaCases003
 :-------------------------:|:-------------------------:
 ![](medpseg/assets/respiratory.gif)  |  ![](medpseg/assets/diseased.gif)
 
+## Evaluation
+
+Check our evaluation reproducibility code for CoronaCases and SemiSeg test results in this ![link](medpseg/evaluation/README.md).
 
 ## Running in .JPG/.PNG images
 

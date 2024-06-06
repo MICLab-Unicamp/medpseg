@@ -1,4 +1,4 @@
-# Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg): End-to-end segmentation of pulmonary structures and lesions in computed tomography
+# Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg): Hierarchical polymorphic multitask learning for the segmentation of ground-glass opacities, consolidation, and pulmonary structures on computed tomography
 Welcome to MEDPSeg. This is a new version of our old [MEDSeg](https://github.com/MICLab-Unicamp/medseg) methodology. In our work, we take advantage of the hierarchical nature of lesion annotation inside the lung to optimize over heterogeneous data and labels! Multitasking of pulmonary artery and airways is also involved. In this repository you can reproduce trained MEDPSeg's automated segmentation capabilities using a graphical tool or command line interface, installed through pip. 
 
 ![Polymorphic and Multitask Learning](medpseg/assets/graphic_summary.png "Polymorphic and Multitask Learning")
@@ -7,14 +7,14 @@ The manuscript for this method is under submission, but you can check our arXiv 
 
 ## Citation
 
-    @misc{carmo2023medpseg,
-          title={MEDPSeg: End-to-end segmentation of pulmonary structures and lesions in computed tomography}, 
-          author={Diedre S. Carmo and Jean Ribeiro and Alejandro P. Comellas and Joseph M. Reinhardt and Sarah E. Gerard and Letícia Rittner and Roberto A. Lotufo},
-          year={2023},
-          eprint={2312.02365},
-          archivePrefix={arXiv},
-          primaryClass={eess.IV}
-    }
+    @misc{carmo2024medpseg,
+      title={MEDPSeg: Hierarchical polymorphic multitask learning for the segmentation of ground-glass opacities, consolidation, and pulmonary structures on computed tomography}, 
+      author={Diedre S. Carmo and Jean A. Ribeiro and Alejandro P. Comellas and Joseph M. Reinhardt and Sarah E. Gerard and Letícia Rittner and Roberto A. Lotufo},
+      year={2024},
+      eprint={2312.02365},
+      archivePrefix={arXiv},
+      primaryClass={eess.IV}
+      }
 
 ## Requirements
 

@@ -3,7 +3,9 @@ Welcome to MEDPSeg. This is a new version of our old [MEDSeg](https://github.com
 
 ![Polymorphic and Multitask Learning](medpseg/assets/graphic_summary.png "Polymorphic and Multitask Learning")
 
-The manuscript for this method is under submission, but you can check our arXiv pre-print!
+## Paper
+
+The manuscript for this method is under submission, but you can check our [arXiv pre-print](https://arxiv.org/abs/2312.02365)!
 
 ## Citation
 

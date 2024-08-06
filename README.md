@@ -49,6 +49,8 @@ First, clone the repository:
     cd medpseg/medpseg
     wget https://github.com/MICLab-Unicamp/medpseg/releases/download/v4.0.0/data_poly.zip
 
+**If this method of downloading the weights doesn't work for you, use this [alternative link](https://drive.google.com/file/d/1biSkeLhDNpxUA6xqOVEOhpaElJ1Y8mWt/view?usp=sharing)!**
+
 Extract the .ckpt files inside the medpseg/medpseg folder. The .ckpt files should be in the same directory level as the run.py file.
 
     unzip data_poly.zip

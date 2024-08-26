@@ -46,7 +46,7 @@ setuptools.setup(
                       'psutil', 
                       'gputil', 
                       'opencv-python', 
-                      'SimpleITK==2.0.2', 
+                      'SimpleITK', 
                       'pydicom', 
                       'matplotlib',
                       'timm',

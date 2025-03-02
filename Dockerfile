@@ -15,9 +15,13 @@ RUN git clone -b streamlit-deploy https://github.com/MICLab-Unicamp/medpseg
 RUN wget https://github.com/MICLab-Unicamp/medpseg/releases/download/v4.0.0/data_poly.zip
 RUN unzip data_poly.zip -d medpseg/medpseg
 RUN rm data_poly.zip
+COPY ./nginx/certs/cloudflare.key /workspace/medpseg/nginx/certs/cloudflare.key
+RUN pip install medpseg/.
 
 # Setup streamlit
 RUN pip install -r medpseg/medpseg/streamlit_requirements.txt
+RUN mkdir /root/.streamlit
+RUN cp -v medpseg/.streamlit/config.toml /root/.streamlit/config.toml
 
 # Entrypoint
 ENTRYPOINT ["streamlit", "run", "/workspace/medpseg/streamlit_web_server.py"]

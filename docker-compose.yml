@@ -1,0 +1,29 @@
+services:
+  nginx:
+    image: nginx
+    build: 
+      context: ./nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - medpseg
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
+    networks:
+      - medpseg
+
+  medpseg:
+    image: medpseg
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8501:8501
+    networks:
+      - medpseg
+  
+networks:
+  medpseg:
+    driver: bridge

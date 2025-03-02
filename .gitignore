@@ -8,6 +8,7 @@ sample_input/
 *.nii.gz
 *.csv
 *.zip
+*.key
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

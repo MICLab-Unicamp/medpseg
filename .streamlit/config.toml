@@ -1,0 +1,4 @@
+[server]
+maxUploadSize = 10
+[theme]
+base = "light"

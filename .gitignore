@@ -1,13 +1,14 @@
 # Custom
 ReadMe.txt
 test_slices.txt
-*.png
+# *.png
 output/
 sample_input/
 *.ckpt
 *.nii.gz
 *.csv
 *.zip
+*.key
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

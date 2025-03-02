@@ -1,5 +1,5 @@
 # Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg): Hierarchical polymorphic multitask learning for the segmentation of ground-glass opacities, consolidation, and pulmonary structures on computed tomography
-Welcome to MEDPSeg. This is a new version of our old [MEDSeg](https://github.com/MICLab-Unicamp/medseg) methodology. In our work, we take advantage of the hierarchical nature of lesion annotation inside the lung to optimize over heterogeneous data and labels! Multitasking of pulmonary artery and airways is also involved. In this repository you can reproduce trained MEDPSeg's automated segmentation capabilities using a graphical tool or command line interface, installed through pip. 
+Welcome to MEDPSeg. This is a new version of our old [MEDSeg](https://github.com/MICLab-Unicamp/medseg) methodology. In our work, we take advantage of the hierarchical nature of lesion annotation inside the lung to optimize over heterogeneous data and labels! Multitasking of pulmonary artery and airways is also involved. In this repository you can reproduce trained MEDPSeg's automated segmentation capabilities using a graphical tool, our online demo, or command line interface, installed through pip. 
 
 ![Polymorphic and Multitask Learning](medpseg/assets/graphic_summary.png "Polymorphic and Multitask Learning")
 
@@ -18,7 +18,17 @@ The manuscript for this method is under submission, but you can check our [arXiv
       primaryClass={eess.IV}
       }
 
-## Requirements
+## Online CPU demo
+
+We have made an online demo available! 
+
+https://medpseg.neuralmind.ai
+
+[![medpseg_online_demo](medpseg/assets/site.png "MEDPSeg online demo interface")](https://medpseg.neuralmind.ai)
+
+There, you can test MEDPSeg with a sample image or upload your own images to be processed.
+
+## Installation Requirements
 
 This tool was tested on Ubuntu 20.04, 22.04 and Windows 10. The following instructions refer to quickly running the tool installing it with Miniconda and pip. Minimum RAM requirement in high resolution CT is 16 GB, with 32 GB recommended. Minimum GPU memory requirements for running on the GPU is 6 GB, with at least 8 GB recommended. Dependencies installed during setup are on the requirements.txt file. 
 

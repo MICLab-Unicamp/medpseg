@@ -28,6 +28,10 @@ https://medpseg.neuralmind.ai
 
 There, you can test MEDPSeg with a sample image or upload your own images to be processed.
 
+## LongCIU dataset
+
+Also checkout our manually annotated GGO and consolidation segmentation dataset, available at: https://github.com/MICLab-UNICAMP/LongCIU
+
 ## Installation Requirements
 
 This tool was tested on Ubuntu 20.04, 22.04 and Windows 10. The following instructions refer to quickly running the tool installing it with Miniconda and pip. Minimum RAM requirement in high resolution CT is 16 GB, with 32 GB recommended. Minimum GPU memory requirements for running on the GPU is 6 GB, with at least 8 GB recommended. Dependencies installed during setup are on the requirements.txt file. 

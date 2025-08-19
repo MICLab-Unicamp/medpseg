@@ -1,5 +1,5 @@
 # .streamlit/config.toml
 [server]
-maxUploadSize = 10
+maxUploadSize = 200
 [theme]
 base = "light"

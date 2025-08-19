@@ -3,3 +3,4 @@ streamlit_scrollable_textbox
 streamlit-aggrid
 tinydb
 psutil
+dotenv

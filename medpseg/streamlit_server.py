@@ -193,7 +193,7 @@ def run(input_path: str, output_path: str) -> str:
     Wrapper around MEDPSeg executable, monitoring output and reporting in real time
     Also returns the full output when execution is finished
     '''
-    process = subprocess.Popen(["medpseg_cpu", 
+    process = subprocess.Popen([os.getenv("MEDPSEG_CMD", "medpseg_cpu"), 
                                 "-i", input_path, 
                                 "-o", output_path], stdout=subprocess.PIPE)
     subbody = st.empty()
@@ -284,14 +284,15 @@ def cleanup_orphaned_processing_entries(db: TinyDB) -> int:
     # Check if any medpseg_cpu process is running
     medpseg_running = False
     try:
+        CMD = os.getenv("MEDPSEG_CMD", "medpseg_cpu")
         for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
             try:
-                if proc.info['name'] == 'medpseg_cpu' or (
+                if proc.info['name'] == CMD or (
                     proc.info['cmdline'] and 
-                    any('medpseg_cpu' in str(cmd) for cmd in proc.info['cmdline'])
+                    any(cmd.endswith(CMD) or cmd == CMD for cmd in proc.info['cmdline'])
                 ):
                     medpseg_running = True
-                    print(f"Found running medpseg_cpu process: PID {proc.info['pid']}")
+                    print(f"Found running {CMD} process: PID {proc.info['pid']}")
                     break
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 continue
@@ -381,13 +382,16 @@ def run_image(input_file: io.BytesIO, _dl_button, volumetric: bool, db: TinyDB):
             # Check if a medpseg_cpu process is already running (single slot limitation)
             medpseg_running = False
             try:
+                CMD = os.getenv("MEDPSEG_CMD", "medpseg_cpu")
                 for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
                     try:
-                        if proc.info['name'] == 'medpseg_cpu' or (
+                        if proc.info['name'] == CMD or (
                             proc.info['cmdline'] and 
-                            any('medpseg_cpu' in str(cmd) for cmd in proc.info['cmdline'])
+                            any(CMD in str(cmd) for cmd in proc.info['cmdline'])
                         ):
                             medpseg_running = True
+                            cmdline_str = ' '.join(proc.info['cmdline']) if proc.info['cmdline'] else 'N/A'
+                            print(f"Debug: Found running process - Name: {proc.info['name']}, PID: {proc.info['pid']}, Command: {cmdline_str}")
                             break
                     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                         continue
@@ -396,7 +400,7 @@ def run_image(input_file: io.BytesIO, _dl_button, volumetric: bool, db: TinyDB):
                 return
             
             if medpseg_running:
-                st.error("❌ Cannot start new 3D processing: Another medpseg_cpu process is already running.")
+                st.error(f"❌ Cannot start new 3D processing: Another {CMD} process is already running.")
                 st.info("💡 Only one 3D processing can run at a time due to hardware limitations.")
                 st.info("🔍 Check the status of your existing processing using the UID checker in the sidebar.")
                 return

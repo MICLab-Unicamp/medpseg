@@ -19,11 +19,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - medpseg_db:/db
     ports:
       - 8501:8501
     networks:
       - medpseg
+    environment:
+      - TINYDB_PATH=${TINYDB_PATH}
+      - MEDPSEG_CMD=${MEDPSEG_CMD}
   
+volumes:
+  medpseg_db:
+
 networks:
   medpseg:
     driver: bridge

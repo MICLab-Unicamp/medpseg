@@ -8,7 +8,9 @@ from medpseg.streamlit_server import streamlit_server
 
 
 if __name__ == "__main__":
-    load_dotenv()
+    print(f"Environment loaded from .env? {load_dotenv()}")
+    print(f"TINYDB_PATH: {os.environ.get('TINYDB_PATH', 'not found')}")
+    print(f"MEDPSEG_CMD: {os.environ.get('MEDPSEG_CMD', 'not found')}")
     
     try:
         TINYDB_PATH = os.environ["TINYDB_PATH"]

@@ -1,4 +1,5 @@
 # Custom
+*.json
 ReadMe.txt
 test_slices.txt
 # *.png

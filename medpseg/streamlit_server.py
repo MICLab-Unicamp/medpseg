@@ -846,7 +846,7 @@ def streamlit_server(db: TinyDB):
         else:
             st.sidebar.error("Please enter a UID")
     
-    st.write("# MEDPSeg (https://github.com/MICLab-Unicamp/medpseg)")
+    st.write("# MEDPSeg by MICLab-UNICAMP")
     st.write("## Welcome to the MEDPSeg online demo!")
     if not inference_2d and not inference_3d:
         st.write("Select an inference mode in the sidebar.")
@@ -907,8 +907,8 @@ def streamlit_server(db: TinyDB):
             st.session_state['processing_2d_started'] = True
             run_image(input_file, dl_button, volumetric=False, db=db)
 
-    st.sidebar.write("This demo is possible thanks to the support of [NeuralMind](https://neuralmind.ai/).")
-    st.sidebar.write("Check our [paper](https://arxiv.org/abs/2312.02365) to learn more about MEDPSeg.")
+    st.sidebar.write("MEDPSeg was developed by [MICLab-UNICAMP](https://miclab.fee.unicamp.br/) with FAPESP funding. Check our [paper](https://arxiv.org/abs/2312.02365) to learn more about MEDPSeg.")
+    st.sidebar.write("This demo is temporarily hosted by [NeuralMind](https://neuralmind.ai/). NeuralMind was not involved in the development of MEDPSeg.")
     
     # Admin Panel in expander at the bottom
     with st.sidebar.expander("🔐 Admin Panel"):

@@ -22,7 +22,7 @@ services:
     volumes:
       - medpseg_db:/db
     ports:
-      - 8501:8501
+      - 8502:8502
     networks:
       - medpseg
     environment:

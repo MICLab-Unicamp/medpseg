@@ -502,7 +502,7 @@ def demo(_dl_button, db: TinyDB):
             with integrity.container():
                 stx.scrollableTextbox(test_output, height=200)
 
-            render_outputs("coronacases_100_003", _dl_button)
+            render_outputs("coronacases_100_003", _dl_button, TMP_DIR)
             
             # Log successful demo processing
             end_time = datetime.datetime.now()

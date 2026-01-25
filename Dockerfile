@@ -23,4 +23,4 @@ RUN mkdir /root/.streamlit
 RUN cp -v medpseg/.streamlit/config.toml /root/.streamlit/config.toml
 
 # Entrypoint
-ENTRYPOINT ["streamlit", "run", "/workspace/medpseg/streamlit_web_server.py"]
+ENTRYPOINT ["streamlit", "run", "/workspace/medpseg/streamlit_web_server.py", "--server.port", "8502"]

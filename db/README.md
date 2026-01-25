@@ -1,0 +1,1 @@
+This folder houses DB files for running the tool on streamlit.

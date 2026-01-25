@@ -37,7 +37,7 @@ from monai.transforms import SaveImaged
 
 # V4: Reorganization, documentation, removal of unused code
 import traceback
-from medpseg import check_weight
+from medpseg import check_weight, get_package_path
 
 
 def int_to_8bit_rgb(arrays: np.ndarray, backgrounds: np.ndarray, save_path: str, slicify: bool):
@@ -108,7 +108,9 @@ def pipeline(runlist: List[str],
         if debug:
             pkg_path = 'medpseg'
         else:
-            pkg_path = os.path.join(site.getsitepackages()[int((os.name=="nt")*1)], "medpseg")
+            # Use get_package_path() which works for both editable and regular installs
+            pkg_path = get_package_path()
+            info_q.put(("write", f"Using package path: {pkg_path}"))
         
         assert len(runlist) > 0, "No file found on given input path."
 
@@ -134,7 +136,10 @@ def pipeline(runlist: List[str],
         if lobe_seg:
             lober_weight = os.path.join(pkg_path, "lober.ckpt")
             check_weight(lober_weight)
-            lober = LoberModule.load_from_checkpoint(lober_weight, map_location="cpu")
+            # PyTorch 2.6+ defaults to weights_only=True, but these checkpoints need weights_only=False
+            import torch
+            torch.serialization.add_safe_globals([torch.torch_version.TorchVersion])
+            lober = LoberModule.load_from_checkpoint(lober_weight, map_location="cpu", weights_only=False)
             monai_saver = SaveImaged(keys=["image"],
                                      meta_keys=["image_meta_dict"],
                                      output_ext=".nii.gz",

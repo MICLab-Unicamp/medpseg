@@ -26,7 +26,11 @@ https://medpseg.neuralmind.ai
 
 [![medpseg_online_demo](medpseg/assets/site.png "MEDPSeg online demo interface")](https://medpseg.neuralmind.ai)
 
-There, you can test MEDPSeg with a sample image or upload your own images to be processed.
+There, you can test MEDPSeg with a sample image or upload your own images to be processed. NeuralMind was not involved with the development of MEDPSeg.
+
+## LongCIU dataset
+
+Also checkout our manually annotated GGO and consolidation segmentation dataset, available at: https://github.com/MICLab-UNICAMP/LongCIU
 
 ## Installation Requirements
 

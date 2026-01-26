@@ -180,7 +180,8 @@ class MainWindow(threading.Thread):
                                                                 self.args.max_hu,
                                                                 self.args.slicify,
                                                                 bool(self.lobe_seg.get()),
-                                                                self.cli))
+                                                                self.cli,
+                                                                self.args.torch_compile))
         
         # Start thread for communication between pipeline and GUI
         self.pipeline_comms_thread = threading.Thread(target=self.pipeline_comms)                                                                

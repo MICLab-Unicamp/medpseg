@@ -101,7 +101,8 @@ def pipeline(runlist: List[str],
              max_hu: int = 600,
              slicify: bool = False,
              lobe_seg: bool = True,
-             cli: bool = True):  
+             cli: bool = True,
+             torch_compile: bool = False):  
     
     try:
         # General exception wrapper, sends it through info_q and quits if anything goes wrong
@@ -118,7 +119,7 @@ def pipeline(runlist: List[str],
         poly_weight = os.path.join(pkg_path, "poly_medseg_25d_fix.ckpt")
         check_weight(poly_weight)
         poly_model = PolySegmentationPipeline(weight=poly_weight,
-                                              batch_size=batch_size, cpu=cpu, output_dir=output_path, post=post, cli=cli)
+                                              batch_size=batch_size, cpu=cpu, output_dir=output_path, post=post, cli=cli, torch_compile=torch_compile)
 
         # We still use the poly_lung part of the old pipeline
         poly_lung_weight = os.path.join(pkg_path, "poly_lung.ckpt")

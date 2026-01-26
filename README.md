@@ -46,7 +46,7 @@ MEDPSeg has been tested with Python > 3.8, up to 3.11. We provide a Dockerfile f
 
 ### GPU Usage: PyTorch setup
 
-Now, install torch with CUDA GPU support. It can be easily installed with a single command depending on your environment. This depends on what GPU you are using and its driver version and support for newer or older CUDA versions. Follow the instructions for your OS and CUDA support of your GPU driver on http://www.pytorch.org/. Either PyTorch 1.12.1 or 2.x should work.
+Now, install torch with CUDA GPU support. It can be easily installed with a single command depending on your environment. This depends on what GPU you are using and its driver version and support for newer or older CUDA versions. Follow the instructions for your OS and CUDA support of your GPU driver on http://www.pytorch.org/. Either PyTorch 1.12.1 or 2.x should work. This step of configuring PyTorch for GPU support manually is specially important if you are using GPUs that are too old (old compute capability for CUDA) or too new (recently released). MEDPSeg has been tested with the following GPUS: [960M, 2080 Ti, 3080 Ti, 4090, 5090, H100]. If your GPU is too old, do not use the --torch_compile flag.
 
 If you don't want to use a GPU, you can skip this part and trust the automatic installation of dependencies.
 
@@ -69,7 +69,7 @@ Extract the .ckpt files inside the medpseg/medpseg folder. The .ckpt files shoul
 
     unzip data_poly.zip
 
-Finally, go into the top level folder (with the setup.py file) and install the tool with "pip install . ". 
+Finally, go into the top level folder (with the pyproject.toml file) and install the tool with "pip install . ". 
 
     cd ..
     pip install .
@@ -94,7 +94,7 @@ The above commands should launch a Graphical User Interface (GUI). Following is 
 
 ![Graphical user interface](medpseg/assets/gui.png "Graphical user interface")
 
-If you don't want to use the GUI, give --input_folder/-i and --output_folder/-o arguments to run in a folder of exams. Check the --help command for more details and help in general for using the command line interface.
+If you don't want to use the GUI, give --input_folder/-i and --output_folder/-o arguments to run in a folder of exams. Check the --help command for more details and help in general for using the command line interface. For example, --torch_compile can be used to accelerate processing, useful for batch processing.
 
 Outputs will include a general report in the form of a .csv sheet and the masks for all targets in .nii.gz format. Below is a rendering for PARSE scan 013 and CoronaCases scan 003.
 

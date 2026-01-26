@@ -205,18 +205,21 @@ class PolySegmentationPipeline():
                  cpu=False,
                  output_dir=None,
                  post=False,
-                 cli=True):  
+                 cli=True,
+                 torch_compile=False):  
         self.version = 'silver_gold_gdl'
         self.batch_size = batch_size
         self.device = torch.device("cpu") if cpu else torch.device("cuda:0")
         # PyTorch 2.6+ defaults to weights_only=True, but these checkpoints need weights_only=False
         torch.serialization.add_safe_globals([torch.torch_version.TorchVersion])
         self.model = PolySeg2DModule.load_from_checkpoint(weight, map_location="cpu", weights_only=False).eval()
-        try:
-            self.model = torch.compile(self.model)
-            print("Model compiled successfully.")
-        except Exception as e:
-            print(f"Error compiling model: {e}")
+        print(f"Model loaded successfully. Dtype: {self.model.dtype}")
+        if torch_compile:
+            try:
+                self.model = torch.compile(self.model)
+                print("Model compiled successfully.")
+            except Exception as e:
+                print(f"Error compiling model: {e}")
         print(self.model.hparams.experiment_name)
         EXPECTED_WEIGHT = "medseg_25d_a100_long_silver_gold_gdl"
         assert EXPECTED_WEIGHT in self.model.hparams.experiment_name, f"Incorrect experiment name {EXPECTED_WEIGHT} in given weight: {weight}, please update weights."
@@ -273,7 +276,7 @@ class PolySegmentationPipeline():
                 adjust_shape = None
                 adjusted_volume = input_volume
 
-            tqdm_iter.write("Polymorphic prediction running... First batch will be slower due to compilation.")
+            tqdm_iter.write("Polymorphic prediction running... First batch will be slower due to compilation." if self.torch_compile else "Polymorphic prediction running...")
             tqdm_iter.progress(40)
 
             if uncertainty is not None:

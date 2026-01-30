@@ -28,21 +28,29 @@ https://medpseg.neuralmind.ai
 
 There, you can test MEDPSeg with a sample image or upload your own images to be processed. NeuralMind was not involved with the development of MEDPSeg.
 
+### Dockerfile
+
+The Dockerfile and docker-compose found on the project root are for hosting the Online CPU demo. If you want to use the offline local tool, we recommend directly installing with pip as in the following instructions.
+
 ## LongCIU dataset
 
 Also checkout our manually annotated GGO and consolidation segmentation dataset, available at: https://github.com/MICLab-UNICAMP/LongCIU
 
 ## Installation Requirements
 
-This tool was tested on Ubuntu 20.04, 22.04 and Windows 10. The following instructions refer to quickly running the tool installing it with Miniconda and pip. Minimum RAM requirement in high resolution CT is 16 GB, with 32 GB recommended. Minimum GPU memory requirements for running on the GPU is 6 GB, with at least 8 GB recommended. Dependencies installed during setup are on the requirements.txt file. 
+This tool was tested on Ubuntu 20.04, 22.04, 24.04 and Windows 10. The following instructions refer to quickly running the tool installing it with Miniconda and pip. Minimum RAM requirement in high resolution CT is 16 GB, with 32 GB recommended. Minimum GPU memory requirements for running on the GPU is 6 GB, with at least 8 GB recommended. Dependencies installed during setup are on the requirements.txt file. 
 
 ### Miniconda
 
 We recommend using a Miniconda/Anaconda environment for installation. To install Miniconda for Windows or Linux follow the instructions in: https://docs.conda.io/en/latest/miniconda.html. If you are on windows. All following commands should be executed in Anaconda Prompt (bundled with miniconda). We recommend you create an environment specific to running MEDPSeg to avoid messing your existing environment. This can be done with, for example:
 
-    conda create -n medpseg python=3.8
+    conda create -n medpseg python=3.13
 
-MEDPSeg has been tested with Python > 3.8, up to 3.11. We provide a Dockerfile for an example usage with a Docker environment but it has not been tested for the current version yet. 
+MEDPSeg has been tested with Python > 3.8, up to 3.13. Notice that your Python version will influence the torch version with GPU support that you can install. Only use old Python versions if your GPU is old.
+
+#### UPDATE: A pyproject.toml has replaced the old setup.py, allowing for installation both with conda/pip and uv. 
+
+If you prefer to use UV, it should also work. Notice that you might need to use uv run to run from the local .venv.
 
 ### GPU Usage: PyTorch setup
 
@@ -94,7 +102,7 @@ The above commands should launch a Graphical User Interface (GUI). Following is 
 
 ![Graphical user interface](medpseg/assets/gui.png "Graphical user interface")
 
-If you don't want to use the GUI, give --input_folder/-i and --output_folder/-o arguments to run in a folder of exams. Check the --help command for more details and help in general for using the command line interface. For example, --torch_compile can be used to accelerate processing, useful for batch processing.
+If you don't want to use the GUI, give --input_folder/-i and --output_folder/-o arguments to run in a folder of exams. Check the --help command for more details and help in general for using the command line interface. For example, --torch_compile can be used to accelerate processing, useful for batch processing. --disable_lobe will disable the lobe network, making processing significantly faster.
 
 Outputs will include a general report in the form of a .csv sheet and the masks for all targets in .nii.gz format. Below is a rendering for PARSE scan 013 and CoronaCases scan 003.
 
@@ -153,7 +161,7 @@ Pulmonary artery segmentation can be affected if the input CT is not contrast en
 
 The segmentation of tubular structures (airway, pulmonary artery) might have multiple connected components. It will only have a single connected component if the "Post" option is selected or given through CLI.
 
-Lobe segmentation in its current form might take a while to finish and be affected by consolidations. You can disable it by unchecking the --lobe_seg checkbox in the GUI or using the --disable_lobe CLI argument.
+Lobe segmentation in its current form might take a while to finish and be affected by consolidations. You can disable it by unchecking the Lobe seg. checkbox in the GUI or using the --disable_lobe CLI argument.
 
 ### Future Goals
 

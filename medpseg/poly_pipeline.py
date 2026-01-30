@@ -214,6 +214,7 @@ class PolySegmentationPipeline():
         torch.serialization.add_safe_globals([torch.torch_version.TorchVersion])
         self.model = PolySeg2DModule.load_from_checkpoint(weight, map_location="cpu", weights_only=False).eval()
         print(f"Model loaded successfully. Dtype: {self.model.dtype}")
+        self.torch_compile = torch_compile
         if torch_compile:
             try:
                 self.model = torch.compile(self.model)

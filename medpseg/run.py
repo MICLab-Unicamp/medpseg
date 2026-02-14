@@ -30,6 +30,7 @@ def arg_parse():
     parser.add_argument('-mah', '--max_hu', type=int, default=600, help="Max HU for reverse engineering 0-255 2D images as input files. We assume Clip to min_hu and max_hu and min-max normalization (0-1 range) was performed. ONLY APPLIES TO .JPG/.PNG INPUTS. We recommend using raw NifT/DICOM files and ignoring this argument.")
     parser.add_argument('--slicify', action="store_true", help="Saves ALL slices as image files in output")
     parser.add_argument('--disable_lobe', action="store_true", help="Disable lobe segmentation for faster prediction")
+    parser.add_argument('--torch_compile', action="store_true", help="Compile the model for faster prediction")
     args = parser.parse_args()
     
     return args

@@ -55,7 +55,9 @@ class SegmentationPipeline():
         self.batch_size = batch_size
         self.n = n
         self.device = torch.device("cpu") if cpu else torch.device("cuda:0")
-        self.model_3d = PolySeg3DModule.load_from_checkpoint(best_3d, map_location="cpu").eval()
+        # PyTorch 2.6+ defaults to weights_only=True, but these checkpoints need weights_only=False
+        torch.serialization.add_safe_globals([torch.torch_version.TorchVersion])
+        self.model_3d = PolySeg3DModule.load_from_checkpoint(best_3d, map_location="cpu", weights_only=False).eval()
         if best_25d is None:
             self.model_25d = None
         else:

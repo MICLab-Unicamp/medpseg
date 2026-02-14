@@ -6,12 +6,13 @@ WORKDIR /workspace
 RUN apt-get update
 RUN apt-get install build-essential git unzip -y
 SHELL ["/bin/bash", "-c"]
-RUN conda create -n medpseg python=3.8
+# Updated to python 3.13
+RUN conda create -n medpseg python=3.13
 RUN echo "source activate medpseg" > ~/.bashrc
 ENV PATH /opt/conda/envs/medpseg/bin:$PATH
 
-# MEDPseg install release
-RUN git clone -b streamlit-deploy https://github.com/MICLab-Unicamp/medpseg 
+# MEDPseg install from local copy
+COPY . /workspace/medpseg
 RUN wget https://github.com/MICLab-Unicamp/medpseg/releases/download/v4.0.0/data_poly.zip
 RUN unzip data_poly.zip -d medpseg/medpseg
 RUN rm data_poly.zip

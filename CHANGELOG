@@ -1,3 +1,7 @@
+v5.0.0
+* Fixing minor bugs on cloud streamlit deploy and Dockerfile
+* Attempt to update library versions and modernize environment with uv
+
 v4.1.0
 * Display attention heatmap during prediction
 * Lobe segmentation and display options are not default anymore

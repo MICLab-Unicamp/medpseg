@@ -132,7 +132,9 @@ class PolySeg2DModule(pl.LightningModule):
         self.pretrained_weights = self.hparams.pretrained_weights
         if self.pretrained_weights is not None:
             print(f"Loading pretrained weights from {self.pretrained_weights}")
-            self.model = PolySeg2DModule.load_from_checkpoint(self.pretrained_weights).model
+            # PyTorch 2.6+ defaults to weights_only=True, but these checkpoints need weights_only=False
+            torch.serialization.add_safe_globals([torch.torch_version.TorchVersion])
+            self.model = PolySeg2DModule.load_from_checkpoint(self.pretrained_weights, weights_only=False).model
 
         # Supervised loss
         assert (not(self.combined_loss) or not(self.nrdice_loss)) and (not(self.combined_loss) or not(self.mccl)) and (not(self.nrdice_loss) or not(self.mccl)), "Cant do combined loss and nrdice loss or combined loss and mccl at the same time"

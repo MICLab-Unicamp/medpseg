@@ -502,7 +502,7 @@ def demo(_dl_button, db: TinyDB):
             with integrity.container():
                 stx.scrollableTextbox(test_output, height=200)
 
-            render_outputs("coronacases_100_003", _dl_button)
+            render_outputs("coronacases_100_003", _dl_button, TMP_DIR)
             
             # Log successful demo processing
             end_time = datetime.datetime.now()
@@ -560,8 +560,11 @@ def check_admin_password(password: str) -> bool:
     Check if the provided password matches the admin password
     Using a simple hash for demo purposes - in production use proper authentication
     '''
-    # Simple password for demo - in production, use environment variables and proper hashing
-    admin_password_hash = "581f55407aecdcc11652e0fbc253fed70d7e38c2db0f9ef94991562f70d1f571"
+    DB_PASSWORD = os.getenv("DB_PASSWORD", None)
+    if DB_PASSWORD is None:
+        st.error("Environment error.")
+        return False
+    admin_password_hash = hashlib.sha256(DB_PASSWORD.encode()).hexdigest()
     provided_hash = hashlib.sha256(password.encode()).hexdigest()
     return provided_hash == admin_password_hash
 

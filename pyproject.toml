@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "medpseg"
+version = "5.0.0"
+description = "Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg)"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    {name = "Diedre Carmo", email = "diedre@unicamp.br"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=2.4.1,<3.0",
+    "rich>=14.3.1,<15.0",
+    "pillow>=12.1.0,<13.0",
+    "scipy>=1.17.0,<2.0",
+    "tqdm>=4.67.1,<5.0",
+    "torch>=2.7.1,<2.9.0",
+    "pandas>=2.3.3,<3.0",
+    "torchvision>=0.22.1,<1.0",
+    "pytorch-lightning>=2.6.0,<3.0",
+    "efficientnet-pytorch>=0.7.1,<1.0",
+    "connected-components-3d>=3.26.1,<4.0",
+    "psutil>=7.2.1,<8.0",
+    "gputil>=1.4.0,<2.0",
+    "opencv-python>=4.13.0,<5.0",
+    "SimpleITK>=2.5.3,<3.0",
+    "pydicom>=3.0.1,<4.0",
+    "matplotlib>=3.10.8,<4.0",
+    "timm>=1.0.24,<2.0",
+    "torchinfo>=1.8.0,<2.0",
+    "monai>=1.5.1,<2.0",
+    "imageio>=2.37.2,<3.0",
+    "nibabel>=5.3.3,<6.0",
+    "wget>=3.2,<4.0",
+    "json2table>=1.1.5,<2.0",
+    "streamlit>=1.53.1,<2.0",
+    "streamlit-scrollable-textbox>=0.0.3,<1.0",
+    "streamlit-aggrid>=1.2.1,<2.0",
+    "tinydb>=4.8.2,<5.0",
+    "python-dotenv>=1.2.1,<2.0",
+]
+
+[project.scripts]
+medpseg = "medpseg.run:main"
+medpseg_cpu = "medpseg.run:main_cpu"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+namespaces = false
+
+[tool.setuptools.package-data]
+medpseg = [
+    "assets/icon.png",
+    "assets/icon_original.png",
+    "assets/coronacases_100_003.png",
+    "assets/respiratory.gif",
+    "assets/diseased.gif",
+    "poly_medseg_25d_fix.ckpt",
+    "poly_lung.ckpt",
+    "lober.ckpt",
+]

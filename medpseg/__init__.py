@@ -1,7 +1,21 @@
 import os
+import site
 
 
-__version__ = "4.1.0"
+__version__ = "5.0.0"
+
+
+def get_package_path():
+    """
+    Get the path to the medpseg package directory.
+    Works for both regular and editable installs.
+    """
+    # Get the directory where this __init__.py file is located
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # If we're in an editable install, the .ckpt files are in the source directory
+    # If we're in a regular install, they should be in the same directory
+    return package_dir
 
 
 def check_weight(path: str):

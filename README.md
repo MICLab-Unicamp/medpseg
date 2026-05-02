@@ -5,9 +5,22 @@ Welcome to MEDPSeg. This is a new version of our old [MEDSeg](https://github.com
 
 ## Paper
 
-The manuscript for this method is under submission, but you can check our [arXiv pre-print](https://arxiv.org/abs/2312.02365)!
+MEDPSeg has been published at SPIE Medical Imaging 2026, winning the computer-aided diagnosis runner-up **best paper award**! 
+
+[Check it out here!](https://doi.org/10.1117/12.3087511)
+
+The older (2024) [arXiv preprint](https://arxiv.org/abs/2312.02365) is still up and contains additional details.
 
 ## Citation
+    @inproceedings{carmo2026medpseg,
+      title={MEDPSeg: an offline pulmonary segmentation and quantification tool for ground-glass opacities, consolidation, and other pulmonary structures on computed tomography},
+      author={Carmo, Diedre S and Ribeiro, Jean A and Comellas, Alejandro P and Reinhardt, Joseph M and Gerard, Sarah E and Rittner, Let{\'\i}cia and Lotufo, Roberto A},
+      booktitle={Medical Imaging 2026: Computer-Aided Diagnosis},
+      volume={13926},
+      pages={65--75},
+      year={2026},
+      organization={SPIE}
+    }
 
     @misc{carmo2024medpseg,
       title={MEDPSeg: Hierarchical polymorphic multitask learning for the segmentation of ground-glass opacities, consolidation, and pulmonary structures on computed tomography}, 
@@ -16,7 +29,7 @@ The manuscript for this method is under submission, but you can check our [arXiv
       eprint={2312.02365},
       archivePrefix={arXiv},
       primaryClass={eess.IV}
-      }
+    }
 
 ## Online CPU demo
 

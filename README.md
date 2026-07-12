@@ -1,7 +1,13 @@
-# Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg): Hierarchical polymorphic multitask learning for the segmentation of ground-glass opacities, consolidation, and pulmonary structures on computed tomography
-Welcome to MEDPSeg. This is a new version of our old [MEDSeg](https://github.com/MICLab-Unicamp/medseg) methodology. In our work, we take advantage of the hierarchical nature of lesion annotation inside the lung to optimize over heterogeneous data and labels! Multitasking of pulmonary artery and airways is also involved. In this repository you can reproduce trained MEDPSeg's automated segmentation capabilities using a graphical tool, our online demo, or command line interface, installed through pip. 
+# Modified EfficientDet for Polymorphic Pulmonary Segmentation (MEDPSeg)
+
+## Hierarchical polymorphic multitask learning for the segmentation of ground-glass opacities, consolidation, and pulmonary structures on computed tomography
+Welcome to MEDPSeg. In our work, we take advantage of the hierarchical nature of lesion annotation inside the lung to optimize over heterogeneous data and labels! Multitasking of pulmonary artery and airways is also involved. In this repository you can reproduce trained MEDPSeg's automated segmentation capabilities using a graphical tool, our online demo, or command line interface, installed through pip. 
+
+Stay tuned for an integration with [LobePrior](https://github.com/MICLab-Unicamp/lobeprior) in the short-term future, for improved lobe segmentation and quantification!
+
 
 ![Polymorphic and Multitask Learning](medpseg/assets/graphic_summary.png "Polymorphic and Multitask Learning")
+
 
 ## Paper
 
@@ -178,8 +184,5 @@ Lobe segmentation in its current form might take a while to finish and be affect
 
 ### Future Goals
 
-Improve lobe segmentation
-
-Provide reproducibility of custom polymorphic data loading
-
-Provide training reproducibility
+1. Integrate [LobePrior](https://github.com/MICLab-Unicamp/lobeprior) for improved lobe segmentation under heavy anatomical burden.
+2. Expand into newer architectural developments and higher hierarchical polymorphism in the lung and other structures and findings.
